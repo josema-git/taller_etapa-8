@@ -1,0 +1,3 @@
+@for (post of postsService.posts(); track post.id) {
+<app-post [post]="post" />
+}
