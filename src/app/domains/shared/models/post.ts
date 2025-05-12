@@ -1,4 +1,7 @@
 export interface PaginatedResponse<T> {
+    current_page: number;
+    total_count: number;
+    total_pages: number;
     count: number;
     next: string | null;
     previous: string | null;

@@ -11,9 +11,9 @@
     <p class="font-normal text-gray-700">{{post().excerpt}}</p>
     <div class="flex items-center justify-between mt-4">
         <div class="flex items-center gap-10">
-            <div (click)="getLikes(); togglePopup()" class="flex relative items-center gap-2">
+            <div  class="flex relative items-center gap-2">
                 <p>{{post().likes}} Likes</p>
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 ml-2 -mr-1 relative"
+                <svg (click)="togglePopup(); getLikes()" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 ml-2 -mr-1 relative"
                     viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                     <path fill-rule="evenodd"
                         d="M6.293 9.293a1 1 0 011.414 0L10 11.586l2.293-2.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
@@ -23,9 +23,27 @@
                 <div 
                     class="origin-left absolute left-3/5 top-6 w-auto shadow-xl bg-white ">
                     <div class="py-2 p-2">
-                        @for( like of likes(); track like.id){
-                        <app-like [like]="like" />
+                        @for(like of likesResponse().results; track like.id){
+                            <div class="flex items-center gap-2">
+                                <p class="text-sm text-gray-900">{{ like.author }}</p>
+                            </div>
                         }
+                        <div class="flex flex-col items-center">
+                            <span class="text-sm text-gray-700 dark:text-gray-400">
+                                 <span class="font-semibold text-gray-900 dark:text-white">{{likesResponse().current_page}}</span>
+                                of <span class="font-semibold text-gray-900 dark:text-white">{{likesResponse().total_pages}}</span> 
+                            </span>
+                            <div class="inline-flex mt-2 xs:mt-0">
+                                <button (click)="getLikes(likesResponse().previous)"
+                                    class="flex items-center justify-center px-3 h-8 text-sm font-medium text-white bg-gray-800 rounded-s hover:bg-gray-900 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
+                                    Prev
+                                </button>
+                                <button (click)="getLikes(likesResponse().next)"
+                                    class="flex items-center justify-center px-3 h-8 text-sm font-medium text-white bg-gray-800 border-0 border-s border-gray-700 rounded-e hover:bg-gray-900 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
+                                    Next
+                                </button>
+                            </div>
+                        </div> 
                     </div>
                 </div>
 

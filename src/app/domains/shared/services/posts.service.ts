@@ -14,12 +14,22 @@ export default class PostsService {
   authService = inject(AuthService);
   apiUrl = environment.apiUrl;
 
-  posts = signal<Post[]>([]);
+  postsResponse = signal<PaginatedResponse<Post>>(
+    {
+      current_page: 1,
+      total_count: 0,
+      total_pages: 0,
+      count: 0,
+      next: null,
+      previous: null,
+      results: []
+    }
+  );
 
-  fillPosts() {
+  fillPosts(url?: string) {
     this.getPosts().subscribe({
       next: (response) => {
-        this.posts.set(response.results);
+        this.postsResponse.set(response);
       },
       error: (err) => {
         console.error(err);
@@ -27,14 +37,14 @@ export default class PostsService {
     });
   }
 
-  getPosts(url: string = this.apiUrl): Observable<PaginatedResponse<Post>> {
+  getPosts(url: string = `${this.apiUrl}/post/`): Observable<PaginatedResponse<Post>> {
     const initialAccessToken = this.authService.getAccessToken();
     if (!initialAccessToken) {
       this.authService.isLoggedIn.set(false);
-      return this.http.get<PaginatedResponse<Post>>(`${this.apiUrl}/post/`);
+      return this.http.get<PaginatedResponse<Post>>(url);
     } else {
       this.authService.isLoggedIn.set(true);
-      return this.http.get<PaginatedResponse<Post>>(`${this.apiUrl}/post/`, {
+      return this.http.get<PaginatedResponse<Post>>(url, {
         headers: {
           Authorization: `Bearer ${initialAccessToken}`
         }
@@ -42,10 +52,10 @@ export default class PostsService {
         return this.authService.refreshToken().pipe(switchMap((newaccestoken) => {
           if (!newaccestoken) {
             this.authService.isLoggedIn.set(false);
-            return this.http.get<PaginatedResponse<Post>>(`${this.apiUrl}/post/`);
+            return this.http.get<PaginatedResponse<Post>>(url);
           }
           this.authService.isLoggedIn.set(true);
-          return this.http.get<PaginatedResponse<Post>>(`${this.apiUrl}/post/`, {
+          return this.http.get<PaginatedResponse<Post>>(url, {
             headers: {
               Authorization: `Bearer ${this.authService.getAccessToken()}`
             }
@@ -55,8 +65,8 @@ export default class PostsService {
     }
   }
 
-  getLikesByPostId(id: number, url: string = this.apiUrl): Observable<PaginatedResponse<Like>> {
-    return this.http.get<PaginatedResponse<Like>>(`${this.apiUrl}/post/${id}/likes/`, {
+  getLikesByPostId(id: number, url: string = `${this.apiUrl}/post/${id}/likes/`): Observable<PaginatedResponse<Like>> {
+    return this.http.get<PaginatedResponse<Like>>(url, {
       headers: {
         Authorization: `Bearer ${this.authService.getAccessToken()}`
       }

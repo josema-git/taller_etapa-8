@@ -1,34 +1,45 @@
 import { Component, inject, input, signal } from '@angular/core';
-import { Like, Post } from '@/shared/models/post';
+import { Post, Like, PaginatedResponse } from '@/shared/models/post';
 import { DatePipe } from '@angular/common';
 import PostsService from '@/shared/services/posts.service';
-import { LikeComponent } from '../like/like.component';
 
 @Component({
   selector: 'app-post',
-  imports: [DatePipe, LikeComponent],
+  imports: [DatePipe],
   templateUrl: './post.component.html',
 })
 export class PostComponent{
 postsService = inject(PostsService);
 post = input.required<Post>();
 openPopup = signal(false);
-likes = signal<Like[]>([]);
-
-getLikes(){
-  this.postsService.getLikesByPostId(this.post().id).subscribe({
-    next: (response) => {
-      this.likes.set(response.results);
-      console.log(this.likes());
-    },
-    error: (err) => {
-      console.error(err);
-    }
-  });
-}
+likesResponse = signal<PaginatedResponse<Like>>({
+  current_page: 1,
+  total_count: 0,
+  total_pages: 0,
+  count: 0,
+  next: null,
+  previous: null,
+  results: []
+});
 
 togglePopup() {
   this.openPopup.set(!this.openPopup());
+}
+
+getLikes( url?: string | null) {
+  if (url) {
+    this.postsService.getLikesByPostId(this.post().id, url).subscribe({
+      next: (response) => {
+        this.likesResponse.set(response)
+      }
+    });
+    return;
+  }
+  this.postsService.getLikesByPostId(this.post().id).subscribe({
+    next: (response) => {
+      this.likesResponse.set(response)
+    }
+  });
 }
 
 toggleLike() {
@@ -37,7 +48,6 @@ toggleLike() {
       next: () => {
         this.post().is_liked = false;
         this.post().likes -= 1;
-        this.getLikes();
       },
       error: (err) => {
         console.error(err);
@@ -48,7 +58,6 @@ toggleLike() {
       next: () => {
         this.post().is_liked = true;
         this.post().likes += 1;
-        this.getLikes();
       },
       error: (err) => {
         console.error(err);
