@@ -26,7 +26,7 @@ export default class PostsService {
     }
   );
 
-  fillPosts(url?: string) {
+  fillPosts(url?: string | null) {
     this.getPosts().subscribe({
       next: (response) => {
         this.postsResponse.set(response);
