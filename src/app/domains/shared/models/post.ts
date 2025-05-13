@@ -1,7 +1,5 @@
 export interface PaginatedResponse<T> {
-    current_page: number;
-    total_count: number;
-    total_pages: number;
+    start_page: number;
     count: number;
     next: string | null;
     previous: string | null;
@@ -12,6 +10,7 @@ export interface Post {
     id: number;
     title: string;
     excerpt: string;
+    content: string;
     author: string;
     likes: number;
     comments: number;

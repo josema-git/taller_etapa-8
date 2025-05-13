@@ -1,6 +1,5 @@
-<nav class="border-black m-2">
-  <div class="w-screen flex flex-wrap items-center justify-between mx-auto">
-
+<nav class="w-screen p-3">
+  <div class="flex flex-wrap items-center justify-between border-b border-black pb-2">
     <a routerLink="/" class="flex space-x-3 rtl:space-x-reverse">
       <img src="file.jpg" class="h-16" alt="avanzatech Logo" />
       <span class="self-center text-2xl font-semibold whitespace-nowrap text-black">Avanzatechblog</span>
@@ -15,7 +14,7 @@
       }
     </button>
 
-    <div
+    <div 
       class="w-full md:block md:w-auto"
       [class.block]="isMenuOpen()"
       [class.hidden]="!isMenuOpen()"
@@ -40,6 +39,5 @@
         }
         </ul>
     </div>
-
   </div>
 </nav>

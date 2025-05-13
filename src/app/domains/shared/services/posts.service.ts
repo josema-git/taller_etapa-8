@@ -16,9 +16,7 @@ export default class PostsService {
 
   postsResponse = signal<PaginatedResponse<Post>>(
     {
-      current_page: 1,
-      total_count: 0,
-      total_pages: 0,
+      start_page: 0,
       count: 0,
       next: null,
       previous: null,
@@ -26,8 +24,9 @@ export default class PostsService {
     }
   );
 
-  fillPosts(url?: string | null) {
-    this.getPosts().subscribe({
+  fillPosts(url: string | null = `${this.apiUrl}/post/`) {
+    url = url ? url : `${this.apiUrl}/post/`;
+    this.getPosts(url).subscribe({
       next: (response) => {
         this.postsResponse.set(response);
       },
@@ -66,6 +65,15 @@ export default class PostsService {
   }
 
   getLikesByPostId(id: number, url: string = `${this.apiUrl}/post/${id}/likes/`): Observable<PaginatedResponse<Like>> {
+    if (!this.authService.getAccessToken()) {
+      return this.http.get<PaginatedResponse<Like>>(url).pipe(map( (response) => {
+        return response
+      }), catchError((err: HttpErrorResponse) => {
+        console.error(err);
+        return [];
+      })
+    )
+    } 
     return this.http.get<PaginatedResponse<Like>>(url, {
       headers: {
         Authorization: `Bearer ${this.authService.getAccessToken()}`
@@ -92,6 +100,22 @@ export default class PostsService {
       headers: {
         Authorization: `Bearer ${this.authService.getAccessToken()}`
       }});
+  }
+
+  editPost(id: number, data: FormData) {
+    return this.http.put(`${this.apiUrl}/post/${id}/`, data, {
+      headers: {
+        Authorization: `Bearer ${this.authService.getAccessToken()}`
+      }
+    });
+  }
+
+  deletePost(id: number) {  
+    return this.http.delete(`${this.apiUrl}/post/${id}/`, {
+      headers: {
+        Authorization: `Bearer ${this.authService.getAccessToken()}`
+      }
+    });  
   }
 
   getPost(id: number) {

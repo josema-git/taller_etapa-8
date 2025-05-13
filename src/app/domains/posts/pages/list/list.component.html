@@ -2,10 +2,7 @@
 <app-post [post]="post" />
 }
 <div class="flex flex-col items-center">
-    <span class="text-sm text-gray-700 dark:text-gray-400">
-         <span class="font-semibold text-gray-900 dark:text-white">{{postsService.postsResponse().current_page}}</span>
-        of <span class="font-semibold text-gray-900 dark:text-white">{{postsService.postsResponse().total_pages}}</span> 
-    </span>
+        <span class="font-semibold text-gray-900 dark:text-white">{{postsService.postsResponse().start_page}}-{{postsService.postsResponse().start_page + postsService.postsResponse().results.length}} of {{postsService.postsResponse().count}}</span>
     <div class="inline-flex mt-2 xs:mt-0">
         <button (click)="postsService.fillPosts(postsService.postsResponse().previous)"
             [disabled]="!postsService.postsResponse().previous"
