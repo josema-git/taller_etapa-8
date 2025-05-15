@@ -10,7 +10,7 @@
     </div>
     <p class="font-normal text-gray-700">{{post().excerpt}}
         @if(post().excerpt.length > post().content.length ){
-            <a [routerLink]='"post/" + post().id' >Read more</a>
+        <a [routerLink]='"post/" + post().id'>Read more</a>
         }
     </p>
     <div class="flex items-center justify-between mt-4">
@@ -54,23 +54,19 @@
                 }
 
             </div>
-            <p>{{post().comments}} Comments</p>
+            <p [routerLink]='"post/" + post().id'>{{post().comments}} Comments</p>
         </div>
         <div class="flex items-center gap-2" [hidden]="post().permission_level < 2">
-            <button type='button' 
-                [class.text-green-500]="post().is_liked" 
-                [class.hover:text-gray-700]="post().is_liked"
-                [class.text-gray-700]="!post().is_liked"
-                [class.hover:text-green-500]="!post().is_liked"
-                (click)="toggleLike()"
-                class="w-10 h-10 font-medium rounded-full text-sm p-2.5 flex">
+            <button type='button' [class.text-green-500]="post().is_liked" [class.hover:text-gray-700]="post().is_liked"
+                [class.text-gray-700]="!post().is_liked" [class.hover:text-green-500]="!post().is_liked"
+                (click)="toggleLike()" class="w-10 h-10 font-medium rounded-full text-sm p-2.5 flex">
                 <svg class="w-50" aria-hidden="true" fill="currentColor" viewBox="0 0 18 18">
                     <path
                         d="M3 7H1a1 1 0 0 0-1 1v8a2 2 0 0 0 4 0V8a1 1 0 0 0-1-1Zm12.954 0H12l1.558-4.5a1.778 1.778 0 0 0-3.331-1.06A24.859 24.859 0 0 1 6 6.8v9.586h.114C8.223 16.969 11.015 18 13.6 18c1.4 0 1.592-.526 1.88-1.317l2.354-7A2 2 0 0 0 15.954 7Z" />
                 </svg>
                 <span class="sr-only">Like post</span>
             </button>
-            <button type='button'
+            <button type='button' [routerLink]='"post/" + post().id'
                 class=" text-gray-700 w-10 h-10 hover:text-green-300 font-medium rounded-full text-sm py-1 pl-1.5 pr-1">
                 <svg version="1.1" viewBox="0 0 16.1 13.1" fill="CurrentColor">
                     <path
@@ -78,10 +74,11 @@
                 </svg>
                 <span class="sr-only">Comment post</span>
             </button>
-            <a [routerLink]='"post/" + post().id' [hidden]="post().permission_level < 3"
+            <a [routerLink]='"editPost/" + post().id' [hidden]="post().permission_level < 3"
                 class="text-gray-700 bg-neutral-100 w-10 h-10 hover:text-green-500 font-medium rounded-full text-sm flex ">
                 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-                    enable-background="new 0 0 64 64" id="Layer_1" version="1.1" viewBox="0 0 64 64" fill="currentColor">
+                    enable-background="new 0 0 64 64" id="Layer_1" version="1.1" viewBox="0 0 64 64"
+                    fill="currentColor">
                     <g>
                         <path
                             d="M55.736,13.636l-4.368-4.362c-0.451-0.451-1.044-0.677-1.636-0.677c-0.592,0-1.184,0.225-1.635,0.676l-3.494,3.484   l7.639,7.626l3.494-3.483C56.639,15.998,56.639,14.535,55.736,13.636z" />
@@ -95,7 +92,18 @@
             </a>
             <button type='button' [hidden]="post().permission_level < 3" (click)="toggleDeleting()"
                 class=" text-gray-700 w-10 h-10 hover:text-red-600 font-medium rounded-full text-sm py-1 pl-1.5 pr-1 ">
-                <svg fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><g data-name="Layer 17" id="Layer_17"><path class="cls-1" d="M24,31H8a3,3,0,0,1-3-3V9A1,1,0,0,1,7,9V28a1,1,0,0,0,1,1H24a1,1,0,0,0,1-1V9a1,1,0,0,1,2,0V28A3,3,0,0,1,24,31Z"/><path class="cls-1" d="M28,7H4A1,1,0,0,1,4,5H28a1,1,0,0,1,0,2Z"/><path class="cls-1" d="M20,7a1,1,0,0,1-1-1V3H13V6a1,1,0,0,1-2,0V2a1,1,0,0,1,1-1h8a1,1,0,0,1,1,1V6A1,1,0,0,1,20,7Z"/><path class="cls-1" d="M16,26a1,1,0,0,1-1-1V11a1,1,0,0,1,2,0V25A1,1,0,0,1,16,26Z"/><path class="cls-1" d="M21,24a1,1,0,0,1-1-1V13a1,1,0,0,1,2,0V23A1,1,0,0,1,21,24Z"/><path class="cls-1" d="M11,24a1,1,0,0,1-1-1V13a1,1,0,0,1,2,0V23A1,1,0,0,1,11,24Z"/></g></svg>
+                <svg fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+                    <g data-name="Layer 17" id="Layer_17">
+                        <path class="cls-1"
+                            d="M24,31H8a3,3,0,0,1-3-3V9A1,1,0,0,1,7,9V28a1,1,0,0,0,1,1H24a1,1,0,0,0,1-1V9a1,1,0,0,1,2,0V28A3,3,0,0,1,24,31Z" />
+                        <path class="cls-1" d="M28,7H4A1,1,0,0,1,4,5H28a1,1,0,0,1,0,2Z" />
+                        <path class="cls-1"
+                            d="M20,7a1,1,0,0,1-1-1V3H13V6a1,1,0,0,1-2,0V2a1,1,0,0,1,1-1h8a1,1,0,0,1,1,1V6A1,1,0,0,1,20,7Z" />
+                        <path class="cls-1" d="M16,26a1,1,0,0,1-1-1V11a1,1,0,0,1,2,0V25A1,1,0,0,1,16,26Z" />
+                        <path class="cls-1" d="M21,24a1,1,0,0,1-1-1V13a1,1,0,0,1,2,0V23A1,1,0,0,1,21,24Z" />
+                        <path class="cls-1" d="M11,24a1,1,0,0,1-1-1V13a1,1,0,0,1,2,0V23A1,1,0,0,1,11,24Z" />
+                    </g>
+                </svg>
                 <span class="sr-only">Delete post</span>
             </button>
         </div>
@@ -103,18 +111,19 @@
     <hr />
 </div>
 <div [hidden]="!deleting()">
-<div class="fixed inset-0 flex items-center justify-center bg-black opacity-40"></div>
-<div class="fixed inset-0 flex items-center justify-center">
-    <div class="bg-white p-6 rounded-lg shadow-lg opacity-100">
-        <h2 class="text-xl font-bold mb-4">¿Estás seguro de eliminar?</h2>
-        <div class="flex justify-end gap-4">
-            <button (click)="deletePost()" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
-                Eliminar
-            </button>
-            <button (click)="toggleDeleting()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">
-                Cancelar
-            </button>
+    <div class="fixed inset-0 flex items-center justify-center bg-black opacity-40 z-20"></div>
+    <div class="fixed inset-0 flex items-center justify-center z-20">
+        <div class="bg-white p-6 rounded-lg shadow-lg opacity-100">
+            <h2 class="text-xl font-bold mb-4">¿Estás seguro de eliminar?</h2>
+            <div class="flex justify-end gap-4">
+                <button (click)="deletePost()" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+                    Eliminar
+                </button>
+                <button (click)="toggleDeleting()"
+                    class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">
+                    Cancelar
+                </button>
+            </div>
         </div>
     </div>
-</div>
 </div>

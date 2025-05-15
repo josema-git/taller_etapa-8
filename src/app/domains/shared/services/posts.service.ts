@@ -1,18 +1,16 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { environment } from 'src/app/environments/environment';
-import { AuthService } from './auth.service';
-import { catchError, map, switchMap } from 'rxjs/operators';
-import { Post, Like, PaginatedResponse } from '../models/post';
-import { Observable } from 'rxjs';
+import { catchError } from 'rxjs/operators'; 
+import { Post, Like, PaginatedResponse, Comment } from '../models/post';
+import { Observable, of, throwError } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
-export default class PostsService {
-  http = inject(HttpClient);
-  authService = inject(AuthService);
-  apiUrl = environment.apiUrl;
+export class PostsService { 
+  private http = inject(HttpClient);
+  private apiUrl = environment.apiUrl;
 
   postsResponse = signal<PaginatedResponse<Post>>(
     {
@@ -24,106 +22,92 @@ export default class PostsService {
     }
   );
 
-  fillPosts(url: string | null = `${this.apiUrl}/post/`) {
-    url = url ? url : `${this.apiUrl}/post/`;
-    this.getPosts(url).subscribe({
-      next: (response) => {
-        this.postsResponse.set(response);
-      },
-      error: (err) => {
-        console.error(err);
-      }
-    });
-  }
-
-  getPosts(url: string = `${this.apiUrl}/post/`): Observable<PaginatedResponse<Post>> {
-    const initialAccessToken = this.authService.getAccessToken();
-    if (!initialAccessToken) {
-      this.authService.isLoggedIn.set(false);
-      return this.http.get<PaginatedResponse<Post>>(url);
-    } else {
-      this.authService.isLoggedIn.set(true);
-      return this.http.get<PaginatedResponse<Post>>(url, {
-        headers: {
-          Authorization: `Bearer ${initialAccessToken}`
-        }
-      }).pipe(catchError((error: HttpErrorResponse) => {
-        return this.authService.refreshToken().pipe(switchMap((newaccestoken) => {
-          if (!newaccestoken) {
-            this.authService.isLoggedIn.set(false);
-            return this.http.get<PaginatedResponse<Post>>(url);
-          }
-          this.authService.isLoggedIn.set(true);
-          return this.http.get<PaginatedResponse<Post>>(url, {
-            headers: {
-              Authorization: `Bearer ${this.authService.getAccessToken()}`
-            }
-          })
-        }))
-      }));
-    }
-  }
-
-  getLikesByPostId(id: number, url: string = `${this.apiUrl}/post/${id}/likes/`): Observable<PaginatedResponse<Like>> {
-    if (!this.authService.getAccessToken()) {
-      return this.http.get<PaginatedResponse<Like>>(url).pipe(map( (response) => {
-        return response
-      }), catchError((err: HttpErrorResponse) => {
-        console.error(err);
-        return [];
-      })
-    )
-    } 
-    return this.http.get<PaginatedResponse<Like>>(url, {
-      headers: {
-        Authorization: `Bearer ${this.authService.getAccessToken()}`
-      }
-    }).pipe(
-      map((response) => {
-        return response;
-      }),
+  getPosts(url: string | null = `${this.apiUrl}/post/`) {
+    const requestUrl = url || `${this.apiUrl}/post/`;
+    this.http.get<PaginatedResponse<Post>>(requestUrl).pipe(
       catchError((err: HttpErrorResponse) => {
-        console.error(err);
-        return [];
-      }))
-    }
-
-  likePost(id: number) {
-    return this.http.post(`${this.apiUrl}/post/${id}/likes/`,{} ,{
-      headers: {
-        Authorization: `Bearer ${this.authService.getAccessToken()}`
-      }});
-  }
-
-  unlikePost(id: number) {
-    return this.http.delete(`${this.apiUrl}/post/${id}/unlikes/`, {
-      headers: {
-        Authorization: `Bearer ${this.authService.getAccessToken()}`
-      }});
-  }
-
-  editPost(id: number, data: FormData) {
-    return this.http.put(`${this.apiUrl}/post/${id}/`, data, {
-      headers: {
-        Authorization: `Bearer ${this.authService.getAccessToken()}`
-      }
+        console.error('Error al obtener posts:', err.message);
+        return throwError(() => err);
+      })
+    ).subscribe({
+      next: (response) => this.postsResponse.set(response),
+      error: (err: HttpErrorResponse) => console.error('Error en fetchPosts:', err)
     });
   }
 
-  deletePost(id: number) {  
-    return this.http.delete(`${this.apiUrl}/post/${id}/`, {
-      headers: {
-        Authorization: `Bearer ${this.authService.getAccessToken()}`
-      }
-    });  
+  getLikesByPostId(postId: number, url?: string | null): Observable<PaginatedResponse<Like>> {
+    const requestUrl = url || `${this.apiUrl}/post/${postId}/likes/`;
+    return this.http.get<PaginatedResponse<Like>>(requestUrl).pipe(
+      catchError((err: HttpErrorResponse) => {
+        console.error(`Error al obtener likes para el post ${postId}:`, err.message);
+        return of({ start_page: 0, count: 0, next: null, previous: null, results: [] as Like[] });
+      })
+    );
   }
 
-  getPost(id: number) {
-    if (this.authService.getRefreshToken()) {
-      this.authService.refreshToken()
-    }
-    return this.http.get(`${this.apiUrl}/post/${id}/`);
+  getCommentsByPostId(postId: number, url?: string | null): Observable<PaginatedResponse<Comment>>{
+    const requestUrl = url || `${this.apiUrl}/post/${postId}/comments/`;
+    return this.http.get<PaginatedResponse<Comment>>(requestUrl).pipe(
+      catchError((err: HttpErrorResponse) => {
+        console.error(`Error al obtener comentarios para el post ${postId}:`, err.message);
+        return of({ start_page: 0, count: 0, next: null, previous: null, results: [] as Comment[] });
+      })
+    );
   }
 
+  likePost(postId: number): Observable<any> { 
+    return this.http.post(`${this.apiUrl}/post/${postId}/likes/`, {}).pipe(
+      catchError((err: HttpErrorResponse) => {
+        console.error(`Error al dar like al post ${postId}:`, err.message);
+        return throwError(() => err);
+      })
+    );
+  }
+
+  unlikePost(postId: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/post/${postId}/unlikes/`).pipe(
+      catchError((err: HttpErrorResponse) => {
+        console.error(`Error al quitar like del post ${postId}:`, err.message);
+        return throwError(() => err);
+      })
+    );
+  }
+
+  editPost(postId: number, data: FormData): Observable<Post> {
+    return this.http.put<Post>(`${this.apiUrl}/post/${postId}/`, data).pipe(
+      catchError((err: HttpErrorResponse) => {
+        console.error(`Error al editar el post ${postId}:`, err.message);
+        return throwError(() => err);
+      })
+    );
+  }
+
+  deletePost(postId: number): Observable<any> { 
+    return this.http.delete(`${this.apiUrl}/post/${postId}/`).pipe(
+      catchError((err: HttpErrorResponse) => {
+        console.error(`Error al eliminar el post ${postId}:`, err.message);
+        return throwError(() => err);
+      })
+    );
+  }
+
+  getPost(postId: number, url?: string): Observable<Post> {
+    const requestUrl = url || `${this.apiUrl}/post/${postId}/`;
+    return this.http.get<Post>(requestUrl).pipe(
+      catchError((err: HttpErrorResponse) => {
+        console.error(`Error al obtener el post ${postId}:`, err.message);
+        return throwError(() => err);
+      })
+    );
+  }
+
+  addComment(postId: number, data: string): Observable<Comment> {
+    return this.http.post<Comment>(`${this.apiUrl}/post/${postId}/comments/`, {'content': data}).pipe(
+      catchError((err: HttpErrorResponse) => {
+        console.error(`Error al agregar un comentario al post ${postId}:`, err.message);
+        return throwError(() => err);
+      })
+    );
+  }
 
 }

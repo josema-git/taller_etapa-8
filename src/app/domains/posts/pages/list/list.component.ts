@@ -1,4 +1,4 @@
-import PostsService from '@/shared/services/posts.service';
+import { PostsService } from '@/shared/services/posts.service';
 import { Component, inject, signal } from '@angular/core';
 import { PostComponent } from '@/posts/components/post/post.component';
 import { OnInit } from '@angular/core';
@@ -14,6 +14,6 @@ export default class ListComponent implements OnInit {
   error = signal<string | null>(null);
 
   ngOnInit() {
-    this.postsService.fillPosts();
+    this.postsService.getPosts();
   }
 }

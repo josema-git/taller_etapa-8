@@ -1,0 +1,7 @@
+<div class="my-10 font-extrabold">
+    <div class="flex justify-between gap-4">
+        <p class=" text-gray-900">{{comment().author}}</p>
+        <p class="text-sm text-gray-900">{{comment().created_at | date:'M/d/yy h:mm' }}</p>
+    </div>
+    <p class="text-gray-700 border-2 p-2 border-black ">{{comment().content}}</p>
+</div>

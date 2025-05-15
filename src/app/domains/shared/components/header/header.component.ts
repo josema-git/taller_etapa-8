@@ -1,7 +1,7 @@
 import { Component, effect, inject, signal } from '@angular/core';
 import { RouterLinkWithHref } from '@angular/router';
 import { AuthService } from '@/shared/services/auth.service';
-import PostsService from '@/shared/services/posts.service';
+import { PostsService } from '@/shared/services/posts.service';
 import { OnInit } from '@angular/core';
 
 @Component({
@@ -15,12 +15,7 @@ export class HeaderComponent {
   isMenuOpen = signal<boolean>(false);
 
   constructor(){
-    effect(() => {
-      const isLoggedIn = this.authservice.isLoggedIn();
-      if (isLoggedIn) {
-        this.authservice.getProfile().subscribe();
-      }
-    })
+    this.authservice.checkInitialState();
   }
 
   toggleMenu() :void {
@@ -30,7 +25,7 @@ export class HeaderComponent {
     this.authservice.logout();
     this.authservice.isLoggedIn.set(false);
     this.authservice.profile.set(null);
-    this.postsService.fillPosts();
+    this.postsService.getPosts();
     this.isMenuOpen.set(false);
   }
 }

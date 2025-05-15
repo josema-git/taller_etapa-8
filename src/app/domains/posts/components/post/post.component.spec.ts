@@ -2,6 +2,12 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { PostComponent } from './post.component';
 import { Post } from '@/shared/models/post';
+import { provideHttpClient } from '@angular/common/http';
+import { provideRouter } from '@angular/router';
+
+class router {
+  navigate = jasmine.createSpy('navigate');
+}
 
 describe('PostComponent', () => {
   let component: PostComponent;
@@ -17,11 +23,12 @@ describe('PostComponent', () => {
     team: 'Test Team',
     permission_level: 1,
     is_liked: false,
+    content: 'This is the content of the test post.'
   }
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-
+      providers: [provideHttpClient(), provideRouter([])],
       imports: [PostComponent]
     })
     .compileComponents();

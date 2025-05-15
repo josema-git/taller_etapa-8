@@ -1,7 +1,7 @@
 import { Component, inject, input, signal } from '@angular/core';
 import { Post, Like, PaginatedResponse } from '@/shared/models/post';
 import { DatePipe } from '@angular/common';
-import PostsService from '@/shared/services/posts.service';
+import { PostsService } from '@/shared/services/posts.service';
 import { RouterLinkWithHref } from '@angular/router';
 
 @Component({
@@ -30,17 +30,12 @@ export class PostComponent {
   }
 
   getLikes(url?: string | null) {
-    if (url) {
-      this.postsService.getLikesByPostId(this.post().id, url).subscribe({
-        next: (response) => {
-          this.likesResponse.set(response)
-        }
-      });
-      return;
-    }
-    this.postsService.getLikesByPostId(this.post().id).subscribe({
-      next: (response) => {
-        this.likesResponse.set(response)
+    this.postsService.getLikesByPostId(this.post().id, url ).subscribe({
+      next: (res) => {
+        this.likesResponse.set(res);
+      },
+      error: (err) => {
+        console.error(err);
       }
     });
   }
@@ -73,7 +68,7 @@ export class PostComponent {
     console.log(this.post().id);
     this.postsService.deletePost(this.post().id).subscribe({
       next: () => {
-        this.postsService.fillPosts();
+        this.postsService.getPosts();
         this.toggleDeleting();
       },
       error: (err) => {

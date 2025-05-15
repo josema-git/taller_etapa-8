@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { environment } from 'src/app/environments/environment';
+import { StorageService } from './storage.service';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -164,9 +165,10 @@ describe('Logout function testing', () => {
 describe('Refresh Token function testing', () => {
   let service: AuthService;
   let httpMock: HttpTestingController;
+  let storageServiceSpy: jasmine.SpyObj<StorageService>;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({providers: [ provideHttpClient(), provideHttpClientTesting() ]});
+    TestBed.configureTestingModule({providers: [ provideHttpClient(), provideHttpClientTesting(), AuthService]});
     service = TestBed.inject(AuthService);  
     httpMock = TestBed.inject(HttpTestingController);
   });
@@ -184,6 +186,8 @@ describe('Refresh Token function testing', () => {
       access: 'newAccessToken',
       refresh: 'newRefreshToken'
     };
+    const dummyToken = 'dummyRefreshToken';
+    spyOn(service, 'getRefreshToken').and.returnValue(dummyToken);
     service.refreshToken().subscribe( response => {
       expect(response).toBeTruthy();
       expect(response).toEqual('newAccessToken');
@@ -197,9 +201,10 @@ describe('Refresh Token function testing', () => {
 describe('Get Profile function testing', () => {
   let service: AuthService;
   let httpMock: HttpTestingController;
+  let storageServiceSpy: jasmine.SpyObj<StorageService>;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({providers: [ provideHttpClient(), provideHttpClientTesting() ]});
+    TestBed.configureTestingModule({providers: [ provideHttpClient(), provideHttpClientTesting(), AuthService ]});
     service = TestBed.inject(AuthService);  
     httpMock = TestBed.inject(HttpTestingController);
   });
@@ -214,14 +219,20 @@ describe('Get Profile function testing', () => {
       password: 'testpassword'
     };
     const mockSuccesResponse = {
-      username: 'testuser'
+      username: 'testuser',
     };
+    const dummyToken = 'dummyAccessToken';
+
+    spyOn(service, 'getAccessToken').and.returnValue(dummyToken);
+
     service.getProfile().subscribe( response => {
       expect(response).toBeTruthy();
-      expect(response).toEqual('testuser');
-    }); 
+      expect(response).toEqual(mockSuccesResponse.username);
+    });
     const req = httpMock.expectOne(`${environment.apiUrl}/profile/`);
     expect(req.request.method).toBe('GET');
+    expect(req.request.headers.get('Authorization')).toBe(`Bearer ${dummyToken}`);
     req.flush(mockSuccesResponse);
+    expect(service.profile()).toEqual(mockSuccesResponse.username);
   });
 })
