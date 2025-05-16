@@ -1,23 +1,9 @@
-<div class="p-6 bg-white border-2 m-4 border-black">
-    <div class="flex items-center justify-between">
-        <h5 class="mb-2 text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white">{{post()?.title}}</h5>
-        <div class="flex items-evenly gap-4">
-            <strong class="text-gray-900 text-sm bg-gray-400 p-1 rounded-xl">{{post()?.team}}</strong>
-            <p class="text-sm text-gray-900">{{post()?.author}}</p>
-            <p class="text-sm text-gray-900">{{post()?.created_at | date:'M/d/yy h:mm' }}</p>
-        </div>
-    </div>
-    <p class="font-normal text-gray-700">{{post()?.content}}
-    </p>
-    <div class="flex items-center justify-center mt-4">
-        <div class="flex items-center gap-10">
-            <div class="flex relative items-center gap-2">
-                <p>{{post()?.likes}} Likes</p>
-            </div>
-        </div>
-    </div>
-</div>
 <div class="p-6">
+<a class="p-6 text-blue-700 underline" routerLink="/">&lt; Back</a>
+    @if(post().permission_level > 0) {
+    <app-post [post]="post()" [detail]=true />
+    @if(editing() !== post().id){
+
     <h2 class="text-3xl flex font-bold text-gray-900 justify-center">Comments</h2>
     @for(comment of commentsResponse().results; track comment) {
     <app-comment [comment]="comment" />
@@ -26,17 +12,28 @@
         <div class="inline-flex mt-2">
             <button (click)="getComments(commentsResponse().previous)" [disabled]="!commentsResponse().previous"
                 class="flex items-center justify-center text-sm font-medium p-3">
-                < </button>
-                    <span class="text-sm text-gray-700 items-center flex">
-                        <span
-                            class="font-semibold text-gray-900 items-center">{{commentsResponse().start_page}}-{{commentsResponse().start_page
-                            + commentsResponse().results.length}} of {{commentsResponse().count}}</span>
-                    </span>
-                    <button (click)="getComments(commentsResponse().next)" [disabled]="!commentsResponse().next"
-                        class="flex items-center justify-center text-sm font-medium p-3">
-                        >
-                    </button>
+                &lt; </button>
+            <span class="text-sm text-gray-700 items-center flex">
+                <span
+                    class="font-semibold text-gray-900 items-center">{{commentsResponse().start_page}}-{{commentsResponse().start_page
+                    + commentsResponse().results.length}} of {{commentsResponse().count}}</span>
+            </span>
+            <button (click)="getComments(commentsResponse().next)" [disabled]="!commentsResponse().next"
+                class="flex items-center justify-center text-sm font-medium p-3">
+                >
+            </button>
         </div>
     </div>
+    @if(isloggedIn() ){
+    <app-add-comment-form (comment)="getComments()" />
+    }
+    } @else {
+    <app-edit-post />
+    }
+
+    }@else{
+    <div class="flex items-center justify-center">
+        <h1 class="text-4xl font-extrabold text-gray-900">Post not found</h1>
+    </div>
+    }
 </div>
-<app-add-comment-form (comment)="addComment($event)"/>

@@ -75,12 +75,22 @@ describe('Register function testing', () => {
 describe('Login function testing', () => {
   let service: AuthService;
   let httpMock: HttpTestingController;
+  let storageServiceMock: jasmine.SpyObj<StorageService>;
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({providers: [ provideHttpClient(), provideHttpClientTesting() ]});
-    service = TestBed.inject(AuthService);  
-    httpMock = TestBed.inject(HttpTestingController);
+beforeEach(() => {
+  storageServiceMock = jasmine.createSpyObj('StorageService', ['getItem', 'setItem', 'removeItem']);
+
+  TestBed.configureTestingModule({
+    providers: [
+      AuthService,
+      provideHttpClient(),
+      provideHttpClientTesting(),
+      { provide: StorageService, useValue: storageServiceMock }
+    ]
   });
+  service = TestBed.inject(AuthService);
+  httpMock = TestBed.inject(HttpTestingController);
+});
 
   afterEach(() => {
     httpMock.verify();
@@ -135,12 +145,22 @@ describe('Login function testing', () => {
 describe('Logout function testing', () => {
   let service: AuthService;
   let httpMock: HttpTestingController;
+  let storageServiceMock: jasmine.SpyObj<StorageService>;
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({providers: [ provideHttpClient(), provideHttpClientTesting() ]});
-    service = TestBed.inject(AuthService);  
-    httpMock = TestBed.inject(HttpTestingController);
+beforeEach(() => {
+  storageServiceMock = jasmine.createSpyObj('StorageService', ['getItem', 'setItem', 'removeItem']);
+
+  TestBed.configureTestingModule({
+    providers: [
+      AuthService,
+      provideHttpClient(),
+      provideHttpClientTesting(),
+      { provide: StorageService, useValue: storageServiceMock }
+    ]
   });
+  service = TestBed.inject(AuthService);
+  httpMock = TestBed.inject(HttpTestingController);
+});
 
   afterEach(() => {
     httpMock.verify();
@@ -165,13 +185,22 @@ describe('Logout function testing', () => {
 describe('Refresh Token function testing', () => {
   let service: AuthService;
   let httpMock: HttpTestingController;
-  let storageServiceSpy: jasmine.SpyObj<StorageService>;
+  let storageServiceMock: jasmine.SpyObj<StorageService>;
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({providers: [ provideHttpClient(), provideHttpClientTesting(), AuthService]});
-    service = TestBed.inject(AuthService);  
-    httpMock = TestBed.inject(HttpTestingController);
+beforeEach(() => {
+  storageServiceMock = jasmine.createSpyObj('StorageService', ['getItem', 'setItem', 'removeItem']);
+
+  TestBed.configureTestingModule({
+    providers: [
+      AuthService,
+      provideHttpClient(),
+      provideHttpClientTesting(),
+      { provide: StorageService, useValue: storageServiceMock }
+    ]
   });
+  service = TestBed.inject(AuthService);
+  httpMock = TestBed.inject(HttpTestingController);
+});
 
   afterEach(() => {
     httpMock.verify();
@@ -201,13 +230,22 @@ describe('Refresh Token function testing', () => {
 describe('Get Profile function testing', () => {
   let service: AuthService;
   let httpMock: HttpTestingController;
-  let storageServiceSpy: jasmine.SpyObj<StorageService>;
+  let storageServiceMock: jasmine.SpyObj<StorageService>;
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({providers: [ provideHttpClient(), provideHttpClientTesting(), AuthService ]});
-    service = TestBed.inject(AuthService);  
-    httpMock = TestBed.inject(HttpTestingController);
+beforeEach(() => {
+  storageServiceMock = jasmine.createSpyObj('StorageService', ['getItem', 'setItem', 'removeItem']);
+
+  TestBed.configureTestingModule({
+    providers: [
+      AuthService,
+      provideHttpClient(),
+      provideHttpClientTesting(),
+      { provide: StorageService, useValue: storageServiceMock }
+    ]
   });
+  service = TestBed.inject(AuthService);
+  httpMock = TestBed.inject(HttpTestingController);
+});
 
   afterEach(() => {
     httpMock.verify();
@@ -224,6 +262,7 @@ describe('Get Profile function testing', () => {
     const dummyToken = 'dummyAccessToken';
 
     spyOn(service, 'getAccessToken').and.returnValue(dummyToken);
+    
 
     service.getProfile().subscribe( response => {
       expect(response).toBeTruthy();

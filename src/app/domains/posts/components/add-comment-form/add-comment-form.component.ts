@@ -33,14 +33,17 @@ export class AddCommentFormComponent {
     return this.addCommentForm.controls.comment;
   }
 
-sendComment() {
-  if (this.addCommentForm.invalid) {
-    this.addCommentForm.markAllAsTouched();
-    return;
+  resetForm() {
+    this.addCommentForm.reset();
   }
-  const commentValue = this.commentCtrl.value;
-  this.comment.emit(commentValue); 
 
-}
-
+  sendComment() {
+    if (this.addCommentForm.invalid) {
+      this.addCommentForm.markAllAsTouched();
+      return;
+    }
+    const commentValue = this.commentCtrl.value;
+    this.comment.emit(commentValue);
+    this.resetForm();
+  }
 }

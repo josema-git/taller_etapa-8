@@ -1,52 +1,46 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, effect, inject, input, signal } from '@angular/core';
 import { Post, Comment, PaginatedResponse } from '@/shared/models/post';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLinkWithHref } from '@angular/router';
 import { PostsService } from '@/shared/services/posts.service';
-import { DatePipe } from '@angular/common';
 import { CommentComponent } from '@/posts/components/comment/comment.component';
 import { AddCommentFormComponent } from '@/posts/components/add-comment-form/add-comment-form.component';
+import { PostComponent } from '@/posts/components/post/post.component';
+import { AuthService } from '@/shared/services/auth.service';
+import { EditPostComponent } from '@/posts/components/edit-post/edit-post.component';
 
 @Component({
   selector: 'app-specific-post',
-  imports: [DatePipe, CommentComponent, AddCommentFormComponent],
+  imports: [CommentComponent, AddCommentFormComponent, PostComponent, RouterLinkWithHref, EditPostComponent],
   templateUrl: './specific-post.component.html',
 })
-export default class SpecificPostComponent  implements OnInit {
+export default class SpecificPostComponent {
   private route = inject(ActivatedRoute);
   private postsService = inject(PostsService);
+  private authService = inject(AuthService);
+  isloggedIn = this.authService.isLoggedIn;
+  editing = this.postsService.editingPost;
   postId = signal(0);
 
-  post = signal<Post | null>(null)
-  commentsResponse = signal<PaginatedResponse<Comment>>(
-    {
-      start_page: 0,
-      count: 0,
-      next: null,
-      previous: null,
-      results: [] as Comment[]
-    }
-  );
-
-  ngOnInit(){
-    this.postId.set(this.route.snapshot.params['postId']);
-    this.getPost();
-    this.getComments();
+  constructor() {
+    effect(() => {
+      const isLoggedInSpy = this.isloggedIn();
+      
+      this.postId.set(this.route.snapshot.params['postId']);
+      this.getPost();
+    })
   }
+
+  post = this.postsService.detailedPost
+
+  commentsResponse = this.postsService.commentsResponse;
 
   getPost() {
-    this.postsService.getPost(this.postId()).subscribe({
-      next: (response) => {
-        this.post.set(response);
-      },
-      error: (err) => {
-        console.error(err);
-      }
-    });
+    this.postsService.getPost(this.postId())
   }
 
-  getComments(url?: string | null) : void {
+  getComments(url?: string | null): void {
     this.postsService.getCommentsByPostId(this.postId(), url).subscribe({
-      next: (response : PaginatedResponse<Comment>) => {
+      next: (response: PaginatedResponse<Comment>) => {
         this.commentsResponse.set(response);
       },
       error: (err) => {
@@ -56,8 +50,8 @@ export default class SpecificPostComponent  implements OnInit {
   }
 
   addComment(comment: string) {
-    this.postsService.addComment(this.postId(), comment ).subscribe({
-      next: (response) => { 
+    this.postsService.addComment(this.postId(), comment).subscribe({
+      next: (response) => {
         this.getComments();
       },
       error: (err) => {

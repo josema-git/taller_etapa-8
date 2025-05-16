@@ -18,6 +18,10 @@ export interface Post {
     created_at: string;
     permission_level: number;
     is_liked: boolean;
+    is_public: number;
+    authenticated_permission: number;
+    group_permission: number;
+    author_permission: number;
 }
 
 export interface Comment {
@@ -27,6 +31,7 @@ export interface Comment {
     content: string;
     created_at: string;
 }
+
 export interface Like {
     id: number;
     post: number;

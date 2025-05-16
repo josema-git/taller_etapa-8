@@ -1,0 +1,93 @@
+<form class="p-6 border border-gray-500 rounded-2xl" [formGroup]="postForm" (ngSubmit)="editPost()">
+  <div class="mb-6">
+    <label for="blogTitle" class="mb-2 text-3xl font-medium text-gray-700">Title<span class="text-red-500">*</span>
+      :</label>
+    <input type="text" id="blogTitle" formControlName="title"
+      class="block rounded-xl border border-gray-400 p-2.5 shadow-sm text-lg" />
+    @if (titleCtrl.invalid && (titleCtrl.dirty || titleCtrl.touched)) {
+    <div class="mt-1 text-xs text-red-500">
+      @if (titleCtrl.errors?.['required']) {
+      <span>Title is required.</span>
+      }
+      @if (titleCtrl.errors?.['maxlength']) {
+      <span>Title cannot be more than 100 characters.</span>
+      }
+    </div>
+    }
+  </div>
+
+  <div class="mb-8">
+    <label for="blogContent" class="mb-2 block text-3xl font-medium text-gray-700">Content<span
+        class="text-red-500">*</span></label>
+    <textarea id="blogContent" formControlName="content" rows="6"
+      class="block w-full rounded-md border border-gray-700 p-2.5 shadow-sm sm:text-lg"></textarea>
+    @if (contentCtrl.invalid && (contentCtrl.dirty || contentCtrl.touched)) {
+    <div class="mt-1 text-xs text-red-500">
+      @if (contentCtrl.errors?.['required']) {
+      <span>Content is required.</span>
+      }
+    </div>
+    }
+  </div>
+
+  <div class="mb-6">
+    <h3 class="mb-1 font-semibold text-3xl text-center">Permissions</h3>
+    <div class="grid grid-cols-4">
+      <div class=" text-center">
+        <label class="block mb-1 text-xl text-center font-bold uppercase tracking-wider text-gray-500">
+          Public
+        </label>
+        <select formControlName="is_public"
+          class=" rounded-md border border-gray-800 bg-white px-2.5 py-1.5 text-xl text-gray-700">
+          @for(option of public_permission_options; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      </div>
+      <div class=" text-center">
+        <label class="block mb-1 text-xl text-center font-bold uppercase tracking-wider text-gray-500">
+          Authenticated
+        </label>
+        <select formControlName="authenticated_permission"
+          class=" rounded-md border border-gray-800 bg-white px-2.5 py-1.5 text-xl text-gray-700">
+          @for(option of auth_group_permission_options; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      </div>
+      <div class=" text-center">
+        <label class="block mb-1 text-xl text-center font-bold uppercase tracking-wider text-gray-500">
+          Team
+        </label>
+        <select formControlName="group_permission"
+          class=" rounded-md border border-gray-800 bg-white px-2.5 py-1.5 text-xl text-gray-700">
+          @for(option of auth_group_permission_options; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      </div>
+      <div class=" text-center">
+        <label class="block mb-1 text-xl text-center font-bold uppercase tracking-wider text-gray-500">
+          Owner
+        </label>
+        <select formControlName="author_permission"
+          class=" rounded-md border border-gray-800 bg-white px-2.5 py-1.5 text-xl text-gray-700">
+          @for(option of authorPermissionOptions; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex justify-end space-x-3 mt-8">
+    <button type="button" (click)="cancel()"
+      class="inline-flex justify-center rounded-md border border-gray-800 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50">
+      <span>Cancel</span>
+    </button>
+    <button type="submit" [disabled]="postForm.invalid"
+      class="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-900">
+      <span>Save</span>
+    </button>
+  </div>
+</form>

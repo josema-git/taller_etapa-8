@@ -12,7 +12,11 @@ export const routes: Routes = [
             {
                 path: 'post/:postId',
                 loadComponent: () => import("@/posts/pages/specific-post/specific-post.component")
-            }
+            },
+            {
+                path: 'create',
+                loadComponent: () => import("@/posts/pages/add-post/add-post.component"),
+            },
         ]
     },
     {

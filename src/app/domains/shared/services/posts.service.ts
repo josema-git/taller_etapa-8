@@ -11,6 +11,7 @@ import { Observable, of, throwError } from 'rxjs';
 export class PostsService { 
   private http = inject(HttpClient);
   private apiUrl = environment.apiUrl;
+  editingPost = signal<number>(0);
 
   postsResponse = signal<PaginatedResponse<Post>>(
     {
@@ -19,6 +20,36 @@ export class PostsService {
       next: null,
       previous: null,
       results: []
+    }
+  );
+
+  detailedPost = signal<Post>(
+    {
+      id: 0,
+      title: '',
+      content: '',
+      excerpt: '',
+      likes: 0,
+      comments: 0,
+      is_liked: false,
+      created_at: '',
+      author: '',
+      team: '',
+      permission_level: 0,
+      is_public: 0,
+      authenticated_permission: 0,
+      group_permission: 0,
+      author_permission: 0,
+    }
+  );
+
+  commentsResponse = signal<PaginatedResponse<Comment>>(
+    {
+      start_page: 0,
+      count: 0,
+      next: null,
+      previous: null,
+      results: [] as Comment[]
     }
   );
 
@@ -73,15 +104,6 @@ export class PostsService {
     );
   }
 
-  editPost(postId: number, data: FormData): Observable<Post> {
-    return this.http.put<Post>(`${this.apiUrl}/post/${postId}/`, data).pipe(
-      catchError((err: HttpErrorResponse) => {
-        console.error(`Error al editar el post ${postId}:`, err.message);
-        return throwError(() => err);
-      })
-    );
-  }
-
   deletePost(postId: number): Observable<any> { 
     return this.http.delete(`${this.apiUrl}/post/${postId}/`).pipe(
       catchError((err: HttpErrorResponse) => {
@@ -91,20 +113,74 @@ export class PostsService {
     );
   }
 
-  getPost(postId: number, url?: string): Observable<Post> {
+  resetPost(){
+    this.detailedPost.set({
+      id: 0,
+      title: '',
+      content: '',
+      excerpt: '',
+      author: '',
+      created_at: '',
+      likes: 0,
+      comments: 0,
+      team: '',
+      permission_level: 0,
+      is_liked: false,
+      is_public: 0,
+      authenticated_permission: 0,
+      group_permission: 0,
+      author_permission: 0,
+    });
+    this.commentsResponse.set({
+      start_page: 0,
+      count: 0,
+      next: null,
+      previous: null,
+      results: [] as Comment[]
+    });
+  }
+
+  getPost(postId: number, url?: string): void {
     const requestUrl = url || `${this.apiUrl}/post/${postId}/`;
-    return this.http.get<Post>(requestUrl).pipe(
+    this.http.get<Post>(requestUrl).pipe(
       catchError((err: HttpErrorResponse) => {
         console.error(`Error al obtener el post ${postId}:`, err.message);
+        this.resetPost();
         return throwError(() => err);
       })
-    );
+    ).subscribe({
+      next: (response) => this.detailedPost.set(response),
+      error: (err: HttpErrorResponse) => console.error('Error en fetchPost:', err)
+    });
   }
 
   addComment(postId: number, data: string): Observable<Comment> {
     return this.http.post<Comment>(`${this.apiUrl}/post/${postId}/comments/`, {'content': data}).pipe(
       catchError((err: HttpErrorResponse) => {
         console.error(`Error al agregar un comentario al post ${postId}:`, err.message);
+        return throwError(() => err);
+      })
+    );
+  }
+
+  addPost(): void {
+    this.http.post<Post>(`${this.apiUrl}/post/`, this.detailedPost()).pipe(
+      catchError((err: HttpErrorResponse) => {
+        console.error('Error al agregar el post:', err.message);
+        return throwError(() => err);
+      })
+    ).subscribe({
+      next: () => {
+        this.getPosts();
+      },
+      error: (err: HttpErrorResponse) => console.error('Error en addPost:', err)
+    });
+  }
+
+  editPost(post: Post): Observable<Post> {
+    return this.http.put<Post>(`${this.apiUrl}/post/${post.id}/`, post).pipe(
+      catchError((err: HttpErrorResponse) => {
+        console.error(`Error al editar el post ${post.id}:`, err.message);
         return throwError(() => err);
       })
     );

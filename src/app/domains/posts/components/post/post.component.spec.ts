@@ -23,7 +23,11 @@ describe('PostComponent', () => {
     team: 'Test Team',
     permission_level: 1,
     is_liked: false,
-    content: 'This is the content of the test post.'
+    content: 'This is the content of the test post.',
+    is_public: 1,
+    authenticated_permission: 1,
+    group_permission: 1,
+    author_permission: 2,
   }
 
   beforeEach(async () => {

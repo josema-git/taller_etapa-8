@@ -12,8 +12,11 @@ import { RouterLinkWithHref } from '@angular/router';
 export class PostComponent {
   postsService = inject(PostsService);
   post = input.required<Post>();
+  detail = input<boolean>(false);
   openPopup = signal(false);
   deleting = signal(false);
+  editing = this.postsService.editingPost;
+
   likesResponse = signal<PaginatedResponse<Like>>({
     start_page: 0,
     count: 0,
@@ -21,6 +24,10 @@ export class PostComponent {
     previous: null,
     results: []
   });
+
+  toggleEditingPost() {
+    this.postsService.editingPost.set(this.post().id);
+  }
 
   togglePopup() {
     this.openPopup.set(!this.openPopup());
@@ -68,7 +75,7 @@ export class PostComponent {
     console.log(this.post().id);
     this.postsService.deletePost(this.post().id).subscribe({
       next: () => {
-        this.postsService.getPosts();
+        const req = this.detail() ? this.postsService.getPosts() : this.postsService.getPost(this.post().id); 
         this.toggleDeleting();
       },
       error: (err) => {

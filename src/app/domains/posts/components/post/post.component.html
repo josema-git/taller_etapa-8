@@ -1,5 +1,4 @@
-<div
-    class="block w-screen p-6 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
+<div class="block p-6 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-100">
     <div class="flex items-center justify-between">
         <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{{post().title}}</h5>
         <div class="flex items-evenly gap-4">
@@ -8,11 +7,16 @@
             <p class="text-sm text-gray-900">{{post().created_at | date:'M/d/yy h:mm' }}</p>
         </div>
     </div>
-    <p class="font-normal text-gray-700">{{post().excerpt}}
-        @if(post().excerpt.length > post().content.length ){
-        <a [routerLink]='"post/" + post().id'>Read more</a>
-        }
-    </p>
+    @if(this.detail()){
+        <p class="font-normal text-gray-700">{{post().content}}
+        </p>
+    } @else{
+        <p class="font-normal text-gray-700">{{post().excerpt}}
+            @if(post().excerpt !== post().content ){
+            <a class="text-blue-700 underline" [routerLink]='"post/" + post().id'>Read more</a>
+            }
+        </p>
+    }
     <div class="flex items-center justify-between mt-4">
         <div class="flex items-center gap-10">
             <div class="flex relative items-center gap-2">
@@ -32,19 +36,20 @@
                         </div>
                         }
                         <div class="flex flex-col items-center">
-                            <span class="text-sm text-gray-700 dark:text-gray-400">
-                                <span
-                                    class="font-semibold text-gray-900">{{likesResponse().start_page}}-{{likesResponse().start_page
-                                    + likesResponse().results.length}} of {{likesResponse().count}}</span>
-                            </span>
+                            
                             <div class="inline-flex mt-2 xs:mt-0">
                                 <button (click)="getLikes(likesResponse().previous)"
-                                    class="flex items-center justify-center px-3 h-8 text-sm font-medium text-white bg-gray-800 rounded-s hover:bg-gray-900 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
-                                    Prev
+                                    class="flex items-center justify-center px-3 h-8 text-sm font-medium">
+                                    &lt;
                                 </button>
+                                <span class="text-sm flex items-center text-gray-700 dark:text-gray-400">
+                                    <span
+                                        class="font-semibold text-gray-900">{{likesResponse().start_page}}-{{likesResponse().start_page
+                                        + likesResponse().results.length}} of {{likesResponse().count}}</span>
+                                </span>
                                 <button (click)="getLikes(likesResponse().next)"
-                                    class="flex items-center justify-center px-3 h-8 text-sm font-medium text-white bg-gray-800 border-0 border-s border-gray-700 rounded-e hover:bg-gray-900 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
-                                    Next
+                                    class="flex items-center justify-center px-3 h-8 text-sm font-medium">
+                                    >
                                 </button>
                             </div>
                         </div>
@@ -66,7 +71,8 @@
                 </svg>
                 <span class="sr-only">Like post</span>
             </button>
-            <button type='button' [routerLink]='"post/" + post().id'
+            @if(!detail()){
+                <button type='button' [routerLink]='"post/" + post().id'
                 class=" text-gray-700 w-10 h-10 hover:text-green-300 font-medium rounded-full text-sm py-1 pl-1.5 pr-1">
                 <svg version="1.1" viewBox="0 0 16.1 13.1" fill="CurrentColor">
                     <path
@@ -74,7 +80,9 @@
                 </svg>
                 <span class="sr-only">Comment post</span>
             </button>
-            <a [routerLink]='"editPost/" + post().id' [hidden]="post().permission_level < 3"
+            }
+            
+            <a [routerLink]="['/post/', post().id]" [hidden]="post().permission_level < 3" (click)="toggleEditingPost()"
                 class="text-gray-700 bg-neutral-100 w-10 h-10 hover:text-green-500 font-medium rounded-full text-sm flex ">
                 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
                     enable-background="new 0 0 64 64" id="Layer_1" version="1.1" viewBox="0 0 64 64"

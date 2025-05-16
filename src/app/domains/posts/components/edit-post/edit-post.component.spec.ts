@@ -1,26 +1,21 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import SpecificPostComponent from './specific-post.component';
-import { provideRouter } from '@angular/router';
+import { EditPostComponent } from './edit-post.component';
 import { provideHttpClient } from '@angular/common/http';
+import { provideRouter } from '@angular/router';
 
-class router{
-  navigate = jasmine.createSpy('navigate');
-}
-
-describe('SpecificPostComponent', () => {
-  let component: SpecificPostComponent;
-  let fixture: ComponentFixture<SpecificPostComponent>;
-  let mockRouter: router;
+describe('EditPostComponent', () => {
+  let component: EditPostComponent;
+  let fixture: ComponentFixture<EditPostComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       providers: [provideHttpClient(), provideRouter([])],
-      imports: [SpecificPostComponent]
+      imports: [EditPostComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(SpecificPostComponent);
+    fixture = TestBed.createComponent(EditPostComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
