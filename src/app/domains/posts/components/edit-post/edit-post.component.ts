@@ -30,7 +30,7 @@ export class EditPostComponent {
     { value: 2, label: 'Read & Write' },
   ];
 
-  constructor(){
+  constructor() {
     this.postId.set(this.route.snapshot.params['postId']);
     this.postService.getPost(this.postId())
     this.postForm.patchValue({
@@ -110,14 +110,6 @@ export class EditPostComponent {
       group_permission: formValues.group_permission,
       author_permission: formValues.author_permission,
     }
-    this.postService.editPost(newPost).subscribe({
-      next: () => {
-        this.postService.getPost(this.postId());
-        this.postService.editingPost.set(0);
-      },
-      error: (err) => {
-        console.error('Error al editar el post:', err);
-      }
-    });
+    this.postService.editPost(newPost);
   }
 }

@@ -25,7 +25,7 @@
         </div>
     </div>
     @if(isloggedIn() ){
-    <app-add-comment-form (comment)="getComments()" />
+    <app-add-comment-form (comment)="addComment($event)" />
     }
     } @else {
     <app-edit-post />

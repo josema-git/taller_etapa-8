@@ -12,6 +12,7 @@ export class PostsService {
   private http = inject(HttpClient);
   private apiUrl = environment.apiUrl;
   editingPost = signal<number>(0);
+  Error = signal<string | null>(null);
 
   postsResponse = signal<PaginatedResponse<Post>>(
     {
@@ -57,12 +58,12 @@ export class PostsService {
     const requestUrl = url || `${this.apiUrl}/post/`;
     this.http.get<PaginatedResponse<Post>>(requestUrl).pipe(
       catchError((err: HttpErrorResponse) => {
-        console.error('Error al obtener posts:', err.message);
+        this.Error.set(`Error fetching posts: ${err.message}`);
         return throwError(() => err);
       })
     ).subscribe({
       next: (response) => this.postsResponse.set(response),
-      error: (err: HttpErrorResponse) => console.error('Error en fetchPosts:', err)
+      error: (err: HttpErrorResponse) => this.Error.set(`Error fetching posts: ${err.message}`)
     });
   }
 
@@ -70,47 +71,68 @@ export class PostsService {
     const requestUrl = url || `${this.apiUrl}/post/${postId}/likes/`;
     return this.http.get<PaginatedResponse<Like>>(requestUrl).pipe(
       catchError((err: HttpErrorResponse) => {
-        console.error(`Error al obtener likes para el post ${postId}:`, err.message);
+        this.Error.set(`Error fetching likes: ${err.message}`);
         return of({ start_page: 0, count: 0, next: null, previous: null, results: [] as Like[] });
       })
     );
   }
 
-  getCommentsByPostId(postId: number, url?: string | null): Observable<PaginatedResponse<Comment>>{
+  getCommentsByPostId(postId: number, url?: string | null): void{
     const requestUrl = url || `${this.apiUrl}/post/${postId}/comments/`;
-    return this.http.get<PaginatedResponse<Comment>>(requestUrl).pipe(
+    this.http.get<PaginatedResponse<Comment>>(requestUrl).pipe(
       catchError((err: HttpErrorResponse) => {
-        console.error(`Error al obtener comentarios para el post ${postId}:`, err.message);
+        this.Error.set(`Error fetching comments: ${err.message}`);
         return of({ start_page: 0, count: 0, next: null, previous: null, results: [] as Comment[] });
       })
-    );
+    ).subscribe({
+      next: (response) => this.commentsResponse.set(response),
+      error: (err: HttpErrorResponse) => this.Error.set(`Error fetching comments: ${err.message}`)
+    });
   }
 
-  likePost(postId: number): Observable<any> { 
-    return this.http.post(`${this.apiUrl}/post/${postId}/likes/`, {}).pipe(
+  likePost(postId: number): void { 
+    this.http.post<Like>(`${this.apiUrl}/post/${postId}/likes/`, {}).pipe(
       catchError((err: HttpErrorResponse) => {
-        console.error(`Error al dar like al post ${postId}:`, err.message);
+        this.Error.set(`Error liking the post: ${err.message}`);
         return throwError(() => err);
       })
-    );
+    ).subscribe({
+      next: () => {
+        this.getLikesByPostId(postId);
+        this.getPost(postId);
+      },
+      error: (err: HttpErrorResponse) => this.Error.set(`Error liking the post: ${err.message}`)
+    });
   }
 
-  unlikePost(postId: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/post/${postId}/unlikes/`).pipe(
+  unlikePost(postId: number): void {
+    this.http.delete<Like>(`${this.apiUrl}/post/${postId}/likes/`).pipe(
       catchError((err: HttpErrorResponse) => {
-        console.error(`Error al quitar like del post ${postId}:`, err.message);
+        this.Error.set(`Error unliking the post: ${err.message}`);
         return throwError(() => err);
       })
-    );
+    ).subscribe({
+      next: () => {
+        this.getLikesByPostId(postId);
+        this.getPost(postId);
+      },
+      error: (err: HttpErrorResponse) => this.Error.set(`Error unliking the post: ${err.message}`)
+    });
   }
 
-  deletePost(postId: number): Observable<any> { 
-    return this.http.delete(`${this.apiUrl}/post/${postId}/`).pipe(
+  deletePost(postId: number): void { 
+    this.http.delete<Post>(`${this.apiUrl}/post/${postId}/`).pipe(
       catchError((err: HttpErrorResponse) => {
-        console.error(`Error al eliminar el post ${postId}:`, err.message);
+        this.Error.set(`Error deleting the post: ${err.message}`);
         return throwError(() => err);
       })
-    );
+    ).subscribe({
+      next: () => {
+        this.getPosts();
+        this.resetPost();
+      },
+      error: (err: HttpErrorResponse) => this.Error.set(`Error deleting the post: ${err.message}`)
+    });
   }
 
   resetPost(){
@@ -144,46 +166,60 @@ export class PostsService {
     const requestUrl = url || `${this.apiUrl}/post/${postId}/`;
     this.http.get<Post>(requestUrl).pipe(
       catchError((err: HttpErrorResponse) => {
-        console.error(`Error al obtener el post ${postId}:`, err.message);
+        console.error(`Error getting the post with id ${postId}:`, err.message);
         this.resetPost();
         return throwError(() => err);
       })
     ).subscribe({
-      next: (response) => this.detailedPost.set(response),
-      error: (err: HttpErrorResponse) => console.error('Error en fetchPost:', err)
+      next: (response) => {
+        this.detailedPost.set(response); 
+        this.getCommentsByPostId(postId);
+      },
+      error: (err: HttpErrorResponse) => this.Error.set(`Error fetching post: ${err.message}`)
     });
   }
 
-  addComment(postId: number, data: string): Observable<Comment> {
-    return this.http.post<Comment>(`${this.apiUrl}/post/${postId}/comments/`, {'content': data}).pipe(
+  addComment(postId: number, data: string): void {
+    this.http.post<Comment>(`${this.apiUrl}/post/${postId}/comments/`, { content: data }).pipe(
       catchError((err: HttpErrorResponse) => {
-        console.error(`Error al agregar un comentario al post ${postId}:`, err.message);
+        this.Error.set(`Error adding comment: ${err.message}`);
         return throwError(() => err);
       })
-    );
+    ).subscribe({
+      next: () => {
+        this.getCommentsByPostId(postId);
+      },
+      error: (err: HttpErrorResponse) => this.Error.set(`Error adding comment: ${err.message}`)
+    });
   }
 
   addPost(): void {
     this.http.post<Post>(`${this.apiUrl}/post/`, this.detailedPost()).pipe(
       catchError((err: HttpErrorResponse) => {
-        console.error('Error al agregar el post:', err.message);
+        this.Error.set(`Error adding post: ${err.message}`);
         return throwError(() => err);
       })
     ).subscribe({
       next: () => {
         this.getPosts();
       },
-      error: (err: HttpErrorResponse) => console.error('Error en addPost:', err)
+      error: (err: HttpErrorResponse) => this.Error.set(`Error adding post: ${err.message}`)
     });
   }
 
-  editPost(post: Post): Observable<Post> {
-    return this.http.put<Post>(`${this.apiUrl}/post/${post.id}/`, post).pipe(
+  editPost(post: Post): void {
+    this.http.put<Post>(`${this.apiUrl}/post/${post.id}/`, post).pipe(
       catchError((err: HttpErrorResponse) => {
-        console.error(`Error al editar el post ${post.id}:`, err.message);
+        this.Error.set(`Error editing post: ${err.message}`);
         return throwError(() => err);
       })
-    );
+    ).subscribe({
+      next: () => {
+        this.editingPost.set(0);
+        this.getPost(post.id);
+      },
+      error: (err: HttpErrorResponse) => this.Error.set(`Error editing post: ${err.message}`)
+    });
   }
 
 }

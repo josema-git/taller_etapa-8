@@ -29,6 +29,10 @@ export class PostComponent {
     this.postsService.editingPost.set(this.post().id);
   }
 
+  resetEditingPost() {
+    this.postsService.editingPost.set(0);
+  }
+
   togglePopup() {
     this.openPopup.set(!this.openPopup());
   }
@@ -49,38 +53,14 @@ export class PostComponent {
 
   toggleLike() {
     if (this.post().is_liked) {
-      this.postsService.unlikePost(this.post().id).subscribe({
-        next: () => {
-          this.post().is_liked = false;
-          this.post().likes -= 1;
-        },
-        error: (err) => {
-          console.error(err);
-        }
-      });
+      this.postsService.unlikePost(this.post().id)
     } else {
-      this.postsService.likePost(this.post().id).subscribe({
-        next: () => {
-          this.post().is_liked = true;
-          this.post().likes += 1;
-        },
-        error: (err) => {
-          console.error(err);
-        }
-      });
+      this.postsService.likePost(this.post().id);
     }
   }
 
   deletePost() {
     console.log(this.post().id);
-    this.postsService.deletePost(this.post().id).subscribe({
-      next: () => {
-        const req = this.detail() ? this.postsService.getPosts() : this.postsService.getPost(this.post().id); 
-        this.toggleDeleting();
-      },
-      error: (err) => {
-        console.error(err);
-      }
-    });
+    this.postsService.deletePost(this.post().id);
   }
 }

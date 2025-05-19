@@ -13,9 +13,19 @@ export class HeaderComponent {
   authservice = inject(AuthService);
   postsService = inject(PostsService);
   isMenuOpen = signal<boolean>(false);
+  error = this.postsService.Error;
 
   constructor() {
     this.authservice.checkInitialState();
+    effect(() => {
+      const error = this.postsService.Error();
+
+      if (error){
+        setTimeout(() => {
+          this.postsService.Error.set(null);
+        }, 4000);
+      }
+  })
   }
 
   toggleMenu(): void {

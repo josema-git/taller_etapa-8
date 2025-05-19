@@ -39,24 +39,10 @@ export default class SpecificPostComponent {
   }
 
   getComments(url?: string | null): void {
-    this.postsService.getCommentsByPostId(this.postId(), url).subscribe({
-      next: (response: PaginatedResponse<Comment>) => {
-        this.commentsResponse.set(response);
-      },
-      error: (err) => {
-        console.error(err);
-      }
-    });
+    this.postsService.getCommentsByPostId(this.postId(), url)
   }
 
   addComment(comment: string) {
-    this.postsService.addComment(this.postId(), comment).subscribe({
-      next: (response) => {
-        this.getComments();
-      },
-      error: (err) => {
-        console.error(err);
-      }
-    });
+    this.postsService.addComment(this.postId(), comment);
   }
 }

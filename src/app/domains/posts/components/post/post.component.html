@@ -59,7 +59,7 @@
                 }
 
             </div>
-            <p [routerLink]='"post/" + post().id'>{{post().comments}} Comments</p>
+            <p [routerLink]='"post/" + post().id' (click)="resetEditingPost()">{{post().comments}} Comments</p>
         </div>
         <div class="flex items-center gap-2" [hidden]="post().permission_level < 2">
             <button type='button' [class.text-green-500]="post().is_liked" [class.hover:text-gray-700]="post().is_liked"
@@ -72,7 +72,7 @@
                 <span class="sr-only">Like post</span>
             </button>
             @if(!detail()){
-                <button type='button' [routerLink]='"post/" + post().id'
+                <button type='button' [routerLink]='"post/" + post().id' (click)="resetEditingPost()"
                 class=" text-gray-700 w-10 h-10 hover:text-green-300 font-medium rounded-full text-sm py-1 pl-1.5 pr-1">
                 <svg version="1.1" viewBox="0 0 16.1 13.1" fill="CurrentColor">
                     <path
@@ -83,7 +83,7 @@
             }
             
             <a [routerLink]="['/post/', post().id]" [hidden]="post().permission_level < 3" (click)="toggleEditingPost()"
-                class="text-gray-700 bg-neutral-100 w-10 h-10 hover:text-green-500 font-medium rounded-full text-sm flex ">
+                class="text-gray-700 w-10 h-10 hover:text-green-500 font-medium rounded-full text-sm flex ">
                 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
                     enable-background="new 0 0 64 64" id="Layer_1" version="1.1" viewBox="0 0 64 64"
                     fill="currentColor">
