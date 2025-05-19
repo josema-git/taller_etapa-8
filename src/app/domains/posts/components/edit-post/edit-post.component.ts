@@ -32,7 +32,7 @@ export class EditPostComponent {
 
   constructor() {
     this.postId.set(this.route.snapshot.params['postId']);
-    this.postService.getPost(this.postId())
+    this.postService.getPost(this.postId()).subscribe();
     this.postForm.patchValue({
       title: this.InitialPost().title,
       content: this.InitialPost().content,
@@ -48,14 +48,14 @@ export class EditPostComponent {
       nonNullable: true,
       validators: [
         Validators.required,
-        Validators.maxLength(100),
+        Validators.maxLength(200),
       ]
     }),
     content: new FormControl('', {
       nonNullable: true,
       validators: [
         Validators.required,
-        Validators.maxLength(400),
+        Validators.maxLength(1000),
       ]
     }),
     is_public: new FormControl(0, {
@@ -110,6 +110,6 @@ export class EditPostComponent {
       group_permission: formValues.group_permission,
       author_permission: formValues.author_permission,
     }
-    this.postService.editPost(newPost);
+    this.postService.editPost(newPost).subscribe();
   }
 }

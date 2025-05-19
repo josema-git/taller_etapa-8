@@ -35,14 +35,14 @@ export default class AddPostComponent {
       nonNullable: true,
       validators: [
         Validators.required,
-        Validators.maxLength(100),
+        Validators.maxLength(200),
       ]
     }),
     content: new FormControl('', {
       nonNullable: true,
       validators: [
         Validators.required,
-        Validators.maxLength(400),
+        Validators.maxLength(1000),
       ]
     }),
     is_public: new FormControl(0, {

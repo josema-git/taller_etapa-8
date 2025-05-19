@@ -11,6 +11,8 @@ export class AuthService {
   private http = inject(HttpClient);
   private storageService = inject(StorageService);
   private apiUrl = environment.apiUrl;
+  error = signal<string | null>(null);
+  success = signal<string | null>(null);
 
   profile = signal<string | null>(null);
   isLoggedIn = signal<boolean>(false);
@@ -93,15 +95,17 @@ export class AuthService {
     return this.http.post<{ message: string, status: number }>(`${this.apiUrl}/register/`, { username: username, password: password });
   }
 
-  logout(): Observable<any> {
+  logout(): Observable<{ 'message': string }> {
     const refreshToken = this.getRefreshToken();
-    return this.http.post(`${this.apiUrl}/logout/`, { refresh: refreshToken }).pipe(
+    return this.http.post<{ 'message': string }>(`${this.apiUrl}/logout/`, { refresh: refreshToken }).pipe(
       tap(() => {
         this.LocalLogout();
+        this.success.set('Logout successful');
       }),
       catchError((err: HttpErrorResponse) => {
         this.LocalLogout();
-        return of(null);
+        this.error.set('Logout failed');
+        return throwError(() => err);
       })
     )
   }

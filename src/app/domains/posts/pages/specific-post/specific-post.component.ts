@@ -19,30 +19,39 @@ export default class SpecificPostComponent {
   private authService = inject(AuthService);
   isloggedIn = this.authService.isLoggedIn;
   editing = this.postsService.editingPost;
+  postsStatus = signal<'init' | 'loading' | 'success'>('init');
+  commentsStatus = signal<'init' | 'loading' | 'success'>('init');
   postId = signal(0);
+  post = this.postsService.detailedPost;
+  commentsResponse = this.postsService.commentsResponse;
 
   constructor() {
     effect(() => {
-      const isLoggedInSpy = this.isloggedIn();
-      
+      const isLoggedIn = this.isloggedIn();
       this.postId.set(this.route.snapshot.params['postId']);
       this.getPost();
     })
   }
 
-  post = this.postsService.detailedPost
-
-  commentsResponse = this.postsService.commentsResponse;
-
   getPost() {
-    this.postsService.getPost(this.postId())
+    this.postsStatus.set('loading');
+    this.postsService.getPost(this.postId()).subscribe(
+      {
+        next: () => {
+          this.postsStatus.set('success');
+        }
+      }
+    );
   }
 
   getComments(url?: string | null): void {
-    this.postsService.getCommentsByPostId(this.postId(), url)
-  }
-
-  addComment(comment: string) {
-    this.postsService.addComment(this.postId(), comment);
+    this.commentsStatus.set('loading');
+    this.postsService.getCommentsByPostId(this.postId(), url).subscribe(
+      {
+        next: () => {
+          this.commentsStatus.set('success');
+        }
+      }
+    );
   }
 }

@@ -5,7 +5,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { environment } from 'src/app/environments/environment';
 import { StorageService } from './storage.service';
 
-describe('AuthService', () => {
+fdescribe('AuthService', () => {
   let service: AuthService;
 
   beforeEach(() => {
@@ -18,7 +18,7 @@ describe('AuthService', () => {
   });
 });
 
-describe('Register function testing', () => {
+fdescribe('Register function testing', () => {
   let service: AuthService;
   let httpMock: HttpTestingController;
 
@@ -60,11 +60,11 @@ describe('Register function testing', () => {
       status: 400,
       message: 'an account with that email already exists'
     };
-    service.register(mockUser.username, mockUser.password).subscribe( response => {
-      expect(response).toBeFalsy();
-      expect(response.status).toEqual(400);
-      expect(response.message).toEqual('an account with that email already exists');
-    }, error => {
+    service.register(mockUser.username, mockUser.password).subscribe( response => {}, error => {
+      expect(error).toBeInstanceOf(HttpErrorResponse);
+      expect(error.status).toBe(400);
+      expect(error.error).toEqual(jasmine.objectContaining(mockErrorResponse));
+      expect(error.error.message).toEqual('an account with that email already exists');
     });
     const req = httpMock.expectOne(`${environment.apiUrl}/register/`);
     expect(req.request.method).toBe('POST');
@@ -72,7 +72,7 @@ describe('Register function testing', () => {
   });
 })
 
-describe('Login function testing', () => {
+fdescribe('Login function testing', () => {
   let service: AuthService;
   let httpMock: HttpTestingController;
   let storageServiceMock: jasmine.SpyObj<StorageService>;

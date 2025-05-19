@@ -19,7 +19,7 @@ export default class ListComponent  {
   constructor(){
     effect(() => {
       const loggedinSpy = this.authService.isLoggedIn();
-      this.postsService.getPosts();
+      this.postsService.getPosts().subscribe();
     })
   }
 }

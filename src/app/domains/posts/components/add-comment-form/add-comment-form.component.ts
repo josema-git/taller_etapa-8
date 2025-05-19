@@ -15,16 +15,14 @@ import {
 export class AddCommentFormComponent {
   private postService = inject(PostsService);
 
-  comment = output<string>();
-
-  status = signal<'init' | 'loading' | 'success' | 'failed'>('init');
+  status = signal<'init' | 'loading' | 'success'>('init');
 
   addCommentForm = new FormGroup({
     comment: new FormControl('', {
       nonNullable: true,
       validators: [
         Validators.required,
-        Validators.maxLength(400),
+        Validators.maxLength(1000),
       ]
     })
   });
@@ -42,8 +40,13 @@ export class AddCommentFormComponent {
       this.addCommentForm.markAllAsTouched();
       return;
     }
-    const commentValue = this.commentCtrl.value;
-    this.comment.emit(commentValue);
+    this.status.set('loading');
+
+    this.postService.addComment(this.postService.detailedPost().id, this.commentCtrl.value).subscribe({
+      next: () => {
+        this.status.set('success');
+      }
+    });
     this.resetForm();
   }
 }

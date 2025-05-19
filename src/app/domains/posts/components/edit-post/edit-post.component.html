@@ -1,32 +1,42 @@
 <form class="p-6 border border-gray-500 rounded-2xl" [formGroup]="postForm" (ngSubmit)="editPost()">
   <div class="mb-6">
-    <label for="blogTitle" class="mb-2 text-3xl font-medium text-gray-700">Title<span class="text-red-500">*</span>
-      :</label>
+    <label for="blogTitle" class="mb-2 text-3xl font-medium text-gray-700">
+      Title<span class="text-red-500">*</span>:
+    </label>
     <input type="text" id="blogTitle" formControlName="title"
       class="block rounded-xl border border-gray-400 p-2.5 shadow-sm text-lg" />
-    @if (titleCtrl.invalid && (titleCtrl.dirty || titleCtrl.touched)) {
-    <div class="mt-1 text-xs text-red-500">
-      @if (titleCtrl.errors?.['required']) {
-      <span>Title is required.</span>
-      }
-      @if (titleCtrl.errors?.['maxlength']) {
-      <span>Title cannot be more than 100 characters.</span>
-      }
-    </div>
+    @if (postForm.get('title')?.invalid && (postForm.get('title')?.dirty || postForm.get('title')?.touched)) {
+      <div
+        class="mt-1 text-xs text-red-500">
+        @if (postForm.get('title')?.errors?.['required']) {
+          <span>
+            Please provide a title for your post.
+          </span>
+        }
+        @if (postForm.get('title')?.errors?.['maxlength']) {
+          <span>
+            Title is too long; maximum allowed is 200 characters.
+          </span>
+        }
+      </div>
     }
   </div>
 
+
   <div class="mb-8">
     <label for="blogContent" class="mb-2 block text-3xl font-medium text-gray-700">Content<span
-        class="text-red-500">*</span></label>
+    class="text-red-500">*</span></label>
     <textarea id="blogContent" formControlName="content" rows="6"
-      class="block w-full rounded-md border border-gray-700 p-2.5 shadow-sm sm:text-lg"></textarea>
+    class="block w-full rounded-md border border-gray-700 p-2.5 shadow-sm sm:text-lg"></textarea>
     @if (contentCtrl.invalid && (contentCtrl.dirty || contentCtrl.touched)) {
-    <div class="mt-1 text-xs text-red-500">
-      @if (contentCtrl.errors?.['required']) {
-      <span>Content is required.</span>
-      }
-    </div>
+      <div class="mt-1 text-xs text-red-500">
+        @if (contentCtrl.errors?.['required']) {
+          <span>Content is required.</span>
+        }
+        @if (contentCtrl.errors?.['maxlength']) {
+          <span>Content cannot exceed 1000 characters.</span>
+        }
+      </div>
     }
   </div>
 
