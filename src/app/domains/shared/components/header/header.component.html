@@ -33,9 +33,16 @@
           <li class="text-center py-2">
             <p class="block py-2 px-3 rounded hover:bg-gray-700 md:hover:bg-transparent md:p-0 cursor-default">Welcome, {{authservice.profile()}}</p>
           </li>
-          <li class="text-center py-2">
-            <a class="block py-2 px-3 text-blue-400 rounded hover:bg-gray-700 md:hover:bg-transparent md:border-0 hover:text-black md:p-0 cursor-pointer" (click)="logout()">Logout</a>
-          </li>
+          @if(this.logoutStatus() === 'loading'){
+            <li class="text-center py-2">
+              <a class="block py-2 px-3 text-blue-400 rounded hover:bg-gray-700 md:hover:bg-transparent md:border-0 hover:text-black md:p-0 cursor-default">Logging out...</a>
+            </li>
+          } @else {
+            <li class="text-center py-2">
+              <a (click)="logout()" class="block py-2 px-3 text-blue-400 rounded hover:bg-gray-700 md:hover:bg-transparent md:border-0 hover:text-black md:p-0 cursor-pointer">Logout</a>
+            </li>
+
+          }
         }
         </ul>
     </div>

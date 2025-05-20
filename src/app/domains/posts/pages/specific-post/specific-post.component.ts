@@ -1,5 +1,4 @@
-import { Component, effect, inject, input, signal } from '@angular/core';
-import { Post, Comment, PaginatedResponse } from '@/shared/models/post';
+import { Component, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLinkWithHref } from '@angular/router';
 import { PostsService } from '@/shared/services/posts.service';
 import { CommentComponent } from '@/posts/components/comment/comment.component';
@@ -39,6 +38,7 @@ export default class SpecificPostComponent {
       {
         next: () => {
           this.postsStatus.set('success');
+          this.getComments();
         }
       }
     );

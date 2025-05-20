@@ -62,7 +62,7 @@ export class LoginFormComponent {
 
     const credentials = this.loginForm.getRawValue();
 
-    this.authService.login(credentials.username, credentials.password).subscribe({
+    this.authService.login(credentials).subscribe({
       next: () => {
         this.status.set('success');
         this.error.set(null);

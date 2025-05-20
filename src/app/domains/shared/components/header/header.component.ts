@@ -15,6 +15,7 @@ export class HeaderComponent {
   postsService = inject(PostsService);
   router = inject(Router);
   isMenuOpen = signal<boolean>(false);
+  logoutStatus = signal<'init' | 'loading' | 'success'>('init');
   error = signal<string | null>(null);
   success = signal<string | null>(null);
 
@@ -70,8 +71,10 @@ export class HeaderComponent {
     this.isMenuOpen.update((value) => !value);
   }
   logout() {
+    this.logoutStatus.set('loading');
     this.authservice.logout().subscribe({
       next: () => {
+        this.logoutStatus.set('success');
         this.router.navigate(['/']);
         this.authservice.success.set('Logout successful');
       }

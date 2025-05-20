@@ -74,16 +74,13 @@ export class AuthService {
     );
   }
 
-  login(username: string, password: string): Observable<{ access: string, refresh: string }> {
-    return this.http.post<{ access: string, refresh: string }>(`${this.apiUrl}/token/`, { username, password }).pipe(
+  login(credentials: { username: string, password: string }): Observable<{ access: string, refresh: string }> {
+    return this.http.post<{ access: string, refresh: string }>(`${this.apiUrl}/token/`, credentials).pipe(
       tap((response) => {
         this.saveTokens(response.access, response.refresh);
+        this.getProfile().subscribe();
       }),
-      switchMap((loginResponse) =>
-        this.getProfile().pipe(
-          map(() => loginResponse)
-        )
-      ),
+      map((response) => response),
       catchError((err: HttpErrorResponse) => {
         this.LocalLogout();
         return throwError(() => err);
@@ -91,8 +88,8 @@ export class AuthService {
     );
   }
 
-  register(username: string, password: string): Observable<{ message: string, status: number }> {
-    return this.http.post<{ message: string, status: number }>(`${this.apiUrl}/register/`, { username: username, password: password });
+  register(credentials: { username: string, password: string }): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/register/`, credentials);
   }
 
   logout(): Observable<{ 'message': string }> {

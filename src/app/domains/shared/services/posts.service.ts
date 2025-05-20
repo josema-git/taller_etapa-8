@@ -164,7 +164,6 @@ export class PostsService {
     return this.http.get<Post>(requestUrl).pipe(
       tap((response) => {
         this.detailedPost.set(response);
-        this.getCommentsByPostId(postId);
       }),
       catchError((err: HttpErrorResponse) => {
         console.error(`Error getting the post with id ${postId}:`, err.message);

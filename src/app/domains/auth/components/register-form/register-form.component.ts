@@ -46,7 +46,7 @@ export class RegisterFormComponent {
 
     const credentials = this.registerForm.getRawValue();
 
-    this.authService.register(credentials.username, credentials.password)
+    this.authService.register(credentials)
       .subscribe({
         next: (response) => {
           this.status.set('success');
