@@ -1,5 +1,6 @@
 import { PostsService } from '@/shared/services/posts.service';
-import { Component, signal, inject, output } from '@angular/core';
+import { Component, signal, inject } from '@angular/core';
+import { QuillModule } from 'ngx-quill';
 import {
   FormControl,
   FormGroup,
@@ -9,7 +10,7 @@ import {
 
 @Component({
   selector: 'app-add-comment-form',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, QuillModule],
   templateUrl: './add-comment-form.component.html',
 })
 export class AddCommentFormComponent {
