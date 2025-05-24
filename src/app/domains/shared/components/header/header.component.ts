@@ -2,7 +2,6 @@ import { Component, effect, inject, signal } from '@angular/core';
 import { RouterLinkWithHref } from '@angular/router';
 import { AuthService } from '@/shared/services/auth.service';
 import { PostsService } from '@/shared/services/posts.service';
-import { tap } from 'rxjs';
 import { Router } from '@angular/router';
 
 @Component({

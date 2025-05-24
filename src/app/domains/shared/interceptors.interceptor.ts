@@ -7,7 +7,6 @@ export const interceptorsInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   let authReq = req;
 
-
   if (req.url.includes('token/refresh/')) {
     const refreshToken = authService.getRefreshToken();
     if (refreshToken) {
@@ -37,11 +36,11 @@ return next(authReq).pipe(
         authService.LocalLogout();
       } else {
         return authService.refreshToken().pipe(
-          switchMap((newAccessToken : string | null) => {
+          switchMap((newAccessToken : {access : string}) => {
             if (newAccessToken){
               const newReq = req.clone({
                 setHeaders: {
-                  Authorization: `Bearer ${newAccessToken}`
+                  Authorization: `Bearer ${newAccessToken.access}`
                 }
               });
               return next(newReq);

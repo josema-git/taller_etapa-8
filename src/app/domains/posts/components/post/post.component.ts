@@ -53,14 +53,22 @@ export class PostComponent {
 
   toggleLike() {
     if (this.post().is_liked) {
-      this.postsService.unlikePost(this.post().id)
+      this.postsService.unlikePost(this.post().id).subscribe(
+        () => {
+          this.post().is_liked = false;
+        }
+      );
     } else {
-      this.postsService.likePost(this.post().id);
+      this.postsService.likePost(this.post().id).subscribe(
+        () => {
+          this.post().is_liked = true;
+        }
+      );
     }
   }
 
   deletePost() {
-    console.log(this.post().id);
-    this.postsService.deletePost(this.post().id);
+    this.deleting.set(false);
+    this.postsService.deletePost(this.post().id).subscribe();
   }
 }

@@ -1,29 +1,66 @@
-@for (post of postsService.postsResponse().results; track post.id) {
-<app-post [post]="post" />
+<!-- iterate through postsResponse().results -->
+@for (post of postsService.postsResponse().results; track post) {
+  <app-post [post]="post"></app-post>
 }
-<div class="flex flex-col items-center">
+
+<!-- loading indicator -->
+@if (status() === 'loading') {
+  <div
+    id="loading-indicator"
+    class="my-4 text-center text-lg text-gray-600"
+    >
+    Loading post...
+  </div>
+}
+
+<!-- paging controls -->
+@if (status() !== 'loading') {
+  <div class="flex flex-col items-center">
     <div class="inline-flex mt-2 items-center">
-        <button (click)="postsService.getPosts(postsService.postsResponse().previous)"
-            [disabled]="!postsService.postsResponse().previous"
-            class="flex items-center justify-center px-3 h-8 text-3xl font-extrabold">
-            &lt;
-        </button>
-        <span
-            class="font-semibold text-gray-900">{{postsService.postsResponse().start_page}}-{{postsService.postsResponse().start_page
-            + postsService.postsResponse().results.length}} of {{postsService.postsResponse().count}}</span>
-        <button (click)="postsService.getPosts(postsService.postsResponse().next)"
-            [disabled]="!postsService.postsResponse().next"
-            class="flex items-center justify-center px-3 h-8 text-3xl font-extrabold">
-            >
-        </button>
+      <button
+        id="prev-btn"
+        (click)="getposts(postsService.postsResponse().previous)"
+        [disabled]="!postsService.postsResponse().previous"
+        [class.text-blue-700]="postsService.postsResponse().previous"
+        [class.text-gray-400]="!postsService.postsResponse().previous"
+        class="flex items-center justify-center px-3 h-8 text-3xl font-extrabold"
+        >
+        ‹
+      </button>
+      <span id="page-info" class="font-semibold text-gray-900">
+        {{ postsService.postsResponse().start_page }}
+        -
+        {{ postsService.postsResponse().start_page + postsService.postsResponse().results.length }}
+        of
+        {{ postsService.postsResponse().count }}
+      </span>
+      <button
+        id="next-btn"
+        (click)="getposts(postsService.postsResponse().next)"
+        [disabled]="!postsService.postsResponse().next"
+        [class.text-blue-700]="postsService.postsResponse().next"
+        [class.text-gray-400]="!postsService.postsResponse().next"
+        class="flex items-center justify-center px-3 h-8 text-3xl font-extrabold"
+        >
+        ›
+      </button>
     </div>
-</div>
-@if(isloggedIn()){
-<a class="fixed bottom-10 right-6 w-30 text-blue-700 hover:w-40 justify-center items-center" routerLink='/create'>
+  </div>
+}
+
+<!-- create-new link -->
+@if (isloggedIn()) {
+  <a
+    id="create-link"
+    routerLink="/create"
+    class="fixed bottom-10 right-6 w-30 text-blue-700 hover:w-40 justify-center items-center"
+    >
     <svg fill="currentColor" version="1.1" viewBox="-1 -0.5 17 16">
-        <path
-            d="M7.5,0C3.364,0,0,3.364,0,7.5S3.364,15,7.5,15S15,11.636,15,7.5S11.636,0,7.5,0z M7.5,14C3.916,14,1,11.084,1,7.5  S3.916,1,7.5,1S14,3.916,14,7.5S11.084,14,7.5,14z" />
-        <polygon points="8,3.5 7,3.5 7,7 3.5,7 3.5,8 7,8 7,11.5 8,11.5 8,8 11.5,8 11.5,7 8,7 " />
+      <path
+        d="M7.5,0C3.364,0,0,3.364,0,7.5S3.364,15,7.5,15S15,11.636,15,7.5S11.636,0,7.5,0z M7.5,14C3.916,14,1,11.084,1,7.5  
+        S3.916,1,7.5,1S14,3.916,14,7.5S11.084,14,7.5,14z"
+        />
+      <polygon points="8,3.5 7,3.5 7,7 3.5,7 3.5,8 7,8 7,11.5 8,11.5 8,8 11.5,8 11.5,7 8,7 " />
     </svg>
-</a>
+  </a>
 }

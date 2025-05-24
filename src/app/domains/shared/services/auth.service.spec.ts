@@ -1,308 +1,153 @@
 import { TestBed } from '@angular/core/testing';
+import {
+  provideHttpClient,
+  withInterceptors,
+  HttpClient
+} from '@angular/common/http';
+import {
+  provideHttpClientTesting,
+  HttpTestingController
+} from '@angular/common/http/testing';
+import { lastValueFrom } from 'rxjs';
+
 import { AuthService } from './auth.service';
-import { HttpClient, HttpErrorResponse, provideHttpClient } from '@angular/common/http';
 import { StorageService } from './storage.service';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { createStorageServiceMock } from './storage-service.mock';
+import { interceptorsInterceptor } from '../interceptors.interceptor';
 import { environment } from 'src/app/environments/environment';
 
-describe('AuthService', () => {
-  let service: AuthService;
+const REGISTER_URL = `${environment.apiUrl}/register/`;
+const testCreds = { username: 'user@test.com', password: 'testpassword' };
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [provideHttpClient()] });
-    service = TestBed.inject(AuthService);
-  });
-
-  it('should be created', () => {
-    expect(service).toBeTruthy();
-  });
-});
-
-describe('Register should register succesfully', () => {
+describe('AuthService register', () => {
   let service: AuthService;
   let httpMock: HttpTestingController;
-  let storageServiceMock: jasmine.SpyObj<StorageService>;
+  let storageMock: jasmine.SpyObj<StorageService>;
 
   beforeEach(() => {
-    storageServiceMock = jasmine.createSpyObj('StorageService', ['getItem', 'setItem', 'removeItem']);
+    storageMock = createStorageServiceMock();
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting(), AuthService, { provide: StorageService, useValue: storageServiceMock }]
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        AuthService,
+        { provide: StorageService, useValue: storageMock }
+      ]
     });
     service = TestBed.inject(AuthService);
     httpMock = TestBed.inject(HttpTestingController);
   });
 
+  afterEach(() => httpMock.verify());
+
   it('should register successfully', () => {
-    const mockUser = {
-      username: 'testuser@test.com',
-      password: 'testpassword'
-    };
-    const mockResponse = {
-      message: 'User created succesfully'
-    };
-    service.register(mockUser).subscribe(
-      (response) => {
-        expect(response).toBeTruthy();
-        expect(response.message).toEqual('User created succesfully');
-      }, (error: HttpErrorResponse) => {
-        fail('Expected successful registration, but got error: ' + error.message);
-      }
-    );
-    const req = httpMock.expectOne(`${environment.apiUrl}/register/`);
+    const mockResponse = { message: 'User created successfully' };
+    const call = lastValueFrom(service.register(testCreds));
+
+    const req = httpMock.expectOne(REGISTER_URL);
     expect(req.request.method).toBe('POST');
-    expect(req.request.body).toEqual(mockUser);
+    expect(req.request.body).toEqual(testCreds);
     req.flush(mockResponse);
-  });
-})
 
-describe('Register should fail to register', () => {
+    return expectAsync(call).toBeResolvedTo(mockResponse);
+  });
+
+  it('should propagate registration error', () => {
+    const errorBody = { message: 'Invalid data' };
+    const call = lastValueFrom(service.register({ username: '', password: '' }));
+
+    const req = httpMock.expectOne(REGISTER_URL);
+    req.flush(errorBody, { status: 400, statusText: 'Bad Request' });
+
+    return expectAsync(call).toBeRejectedWith(jasmine.objectContaining({ status: 400 }));
+  });
+});
+
+describe('AuthService', () => {
   let service: AuthService;
-  let httpClient: HttpClient;
-  let storageServiceMock: jasmine.SpyObj<StorageService>;
+  let http: HttpClient;
+  let storageMock: jasmine.SpyObj<StorageService>;
 
   beforeEach(() => {
-    storageServiceMock = jasmine.createSpyObj('StorageService', ['getItem', 'setItem', 'removeItem']);
-    TestBed.configureTestingModule({
-      providers: [provideHttpClient(), AuthService, { provide: StorageService, useValue: storageServiceMock }]
-    });
-    service = TestBed.inject(AuthService);
-    httpClient = TestBed.inject(HttpClient);
-  });
-
-  it('should fail to register', (done) => {
-    const mockUser = {
-      username: '',
-      password: ''
-    };
-
-    const mockExpectedErrorResponse = {
-      message: 'Username and password are required'
-    };
-
-    service.register(mockUser).subscribe({
-      error: (error: HttpErrorResponse) => {
-        expect(error).toBeInstanceOf(HttpErrorResponse);
-        expect(error.status).toBe(400);
-        expect(error.error.message).toEqual('username and password are required');
-        done();
-      }
-    });
-  });
-
-  it('should fail to register for duplicated email', (done) => {
-    const mockUser = {
-      username: 'user@test.com',
-      password: 'testpassword'
-    };
-    const mockExpectedErrorResponse = {
-      message: 'an account with that email already exists'
-    };
-    service.register(mockUser).subscribe({
-      error: (error: HttpErrorResponse) => {
-        expect(error).toBeInstanceOf(HttpErrorResponse);
-        expect(error.status).toBe(400);
-        expect(error.error.message).toEqual('an account with that email already exists');
-        done();
-      }
-    });
-  });
-})
-
-describe('Login function testing', () => {
-  let service: AuthService;
-  let httpClient: HttpClient;
-  let storageServiceMock: jasmine.SpyObj<StorageService>;
-
-  beforeEach(() => {
-    storageServiceMock = jasmine.createSpyObj('StorageService', ['getItem', 'setItem', 'removeItem']);
-
+    storageMock = createStorageServiceMock();
     TestBed.configureTestingModule({
       providers: [
+        provideHttpClient(withInterceptors([interceptorsInterceptor])),
         AuthService,
-        provideHttpClient(),
-        { provide: StorageService, useValue: storageServiceMock }
+        { provide: StorageService, useValue: storageMock }
       ]
     });
     service = TestBed.inject(AuthService);
-    httpClient = TestBed.inject(HttpClient);
+    http = TestBed.inject(HttpClient);
   });
 
-  it('should login successfully and store tokens', (done) => {
-    const mockUser = {
-      username: 'user@test.com',
-      password: 'testpassword'
-    };
-    service.login(mockUser).subscribe(
-      (response) => {
-        expect(response).toBeTruthy();
-        expect(response.access).toBeDefined();
-        expect(response.refresh).toBeDefined();
-        expect(storageServiceMock.setItem).toHaveBeenCalled();
-        expect(storageServiceMock.setItem).toHaveBeenCalled();
-        done();
-      }, (error: HttpErrorResponse) => {
-        console.error('ERROR:', error);
-        fail('Expected successful login, but got error: ' + error.message);
-        done();
-      }
-    );
+  it('should login successfully and store tokens', async () => {
+    const response = await lastValueFrom(service.login(testCreds));
+    expect(response.access).toBeDefined();
+    expect(response.refresh).toBeDefined();
+    expect(storageMock.setItem).toHaveBeenCalledWith('miAppAccessToken', response.access);
+    expect(storageMock.setItem).toHaveBeenCalledWith('miAppRefreshToken', response.refresh);
+    expect(service.getAccessToken()).toBe(response.access);
+    expect(service.getRefreshToken()).toBe(response.refresh);
+    expect(service.isLoggedIn()).toBeTrue();
   });
 
-  it('should fail to login with invalid credentials and propagate the error correctly', (done) => {
-    const mockUser = {
-      username: 'invaliduser',
-      password: 'invalidpassword'
-    };
-    service.login(mockUser)
-      .subscribe({
-        error: (error: HttpErrorResponse) => {
-          expect(error).toBeInstanceOf(HttpErrorResponse);
-          expect(error.status).toBe(401);
-          expect(error.error.detail).toEqual('No active account found with the given credentials');
-          done();
-        },
-      });
-  })
-})
+  it('should logout successfully', async () => {
+    const loginResp = await lastValueFrom(service.login(testCreds));
+    expect(service.isLoggedIn()).toBeTrue();
 
-fdescribe('Logout function testing', () => {
-  let service: AuthService;
-  let httpClient: HttpClient;
-  let storageServiceMock: jasmine.SpyObj<StorageService>;
-
-  beforeEach(() => {
-    storageServiceMock = jasmine.createSpyObj('StorageService', ['getItem', 'setItem', 'removeItem']);
-
-    TestBed.configureTestingModule({
-      providers: [
-        AuthService,
-        provideHttpClient(),
-        { provide: StorageService, useValue: storageServiceMock }
-      ]
-    });
-    service = TestBed.inject(AuthService);
-    httpClient = TestBed.inject(HttpClient);
+    const logoutResp = await lastValueFrom(service.logout());
+    expect(logoutResp.message).toBe('Logout successful');
+    expect(storageMock.removeItem).toHaveBeenCalledWith('miAppAccessToken');
+    expect(storageMock.removeItem).toHaveBeenCalledWith('miAppRefreshToken');
+    expect(service.isLoggedIn()).toBeFalse();
   });
 
-  it('should logout successfully', (done) => {
-    const mockUser = {
-      username: 'user@test.com',
-      password: 'testpassword'
-    };
-    service.login(mockUser).subscribe(
-      (response) => {
-        expect(response).toBeTruthy();
-        expect(response.access).toBeDefined();
-        expect(response.refresh).toBeDefined();
-        service.logout().subscribe(
-          (logoutResponse) => {
-            expect(logoutResponse).toBeTruthy();
-            expect(logoutResponse.message).toEqual('Logout successful');
-            expect(storageServiceMock.removeItem).toHaveBeenCalledWith('miAppAccessToken');
-            expect(storageServiceMock.removeItem).toHaveBeenCalledWith('miAppRefreshToken');
-            done();
-          }, (error: HttpErrorResponse) => {
-            console.error('ERROR:', error);
-            fail('Expected successful logout, but got error: ' + error.message);
-            done();
-          }
-        );
-      }
-    );
-})
-})
+  it('should fail to logout when not logged in', async () => {
+    try {
+      await lastValueFrom(service.logout());
+      fail('Expected logout to fail');
+    } catch (err: any) {
+      expect(err.status).toBe(401);
+      expect(service.isLoggedIn()).toBeFalse();
+    }
+  });
 
+  it('should refresh token successfully', async () => {
+    const loginResp = await lastValueFrom(service.login(testCreds));
+    const oldAccess = loginResp.access;
 
-// describe('Refresh Token function testing', () => {
-//   let service: AuthService;
-//   let httpClient: HttpClient;
-//   let storageServiceMock: jasmine.SpyObj<StorageService>;
+    const refreshResp = await lastValueFrom(service.refreshToken());
+    expect(refreshResp.access).toBeDefined();
+    expect(refreshResp.access).not.toBe(oldAccess);
+    expect(storageMock.setItem).toHaveBeenCalledWith('miAppAccessToken', refreshResp.access);
+    expect(service.isLoggedIn()).toBeTrue();
+  });
 
-//   beforeEach(() => {
-//     storageServiceMock = jasmine.createSpyObj('StorageService', ['getItem', 'setItem', 'removeItem']);
+  it('should fail to refresh if no refresh token', async () => {
+    try {
+      await lastValueFrom(service.refreshToken());
+      fail('Expected refreshToken to throw');
+    } catch (err: any) {
+      expect(service.isLoggedIn()).toBeFalse();
+    }
+  });
 
-//     TestBed.configureTestingModule({
-//       providers: [
-//         AuthService,
-//         provideHttpClient(),
-//         provideHttpClientTesting(),
-//         { provide: StorageService, useValue: storageServiceMock }
-//       ]
-//     });
-//     service = TestBed.inject(AuthService);
-//     httpMock = TestBed.inject(HttpClient);
-//   });
+  it('should get profile when logged in', async () => {
+    const loginResp = await lastValueFrom(service.login(testCreds));
+    const profileResp = await lastValueFrom(service.getProfile());
+    expect(profileResp.username).toBe(testCreds.username);
+    expect(service.profile()).toBe(testCreds.username);
+    expect(service.isLoggedIn()).toBeTrue();
+  });
 
-//   afterEach(() => {
-//     httpMock.verify();
-//   });
-
-//   it('should refresh token successfully', () => {
-//     const mockUser = {
-//       username: 'testuser',
-//       password: 'testpassword'
-//     };
-//     const mockSuccesResponse = {
-//       access: 'newAccessToken',
-//       refresh: 'newRefreshToken'
-//     };
-//     const dummyToken = 'dummyRefreshToken';
-//     spyOn(service, 'getRefreshToken').and.returnValue(dummyToken);
-//     service.refreshToken().subscribe(response => {
-//       expect(response).toBeTruthy();
-//       expect(response).toEqual('newAccessToken');
-//     });
-//     const req = httpMock.expectOne(`${environment.apiUrl}/token/refresh/`);
-//     expect(req.request.method).toBe('POST');
-//     req.flush(mockSuccesResponse);
-//   });
-// })
-
-// describe('Get Profile function testing', () => {
-//   let service: AuthService;
-//   let httpClient: HttpClient;
-//   let storageServiceMock: jasmine.SpyObj<StorageService>;
-
-//   beforeEach(() => {
-//     storageServiceMock = jasmine.createSpyObj('StorageService', ['getItem', 'setItem', 'removeItem']);
-
-//     TestBed.configureTestingModule({
-//       providers: [
-//         AuthService,
-//         provideHttpClient(),
-//         provideHttpClientTesting(),
-//         { provide: StorageService, useValue: storageServiceMock }
-//       ]
-//     });
-//     service = TestBed.inject(AuthService);
-//     httpMock = TestBed.inject(HttpClient);
-//   });
-
-//   afterEach(() => {
-//     httpMock.verify();
-//   });
-
-//   it('should get profile successfully', () => {
-//     const mockSuccesResponse = {
-//       username: 'testuser',
-//     };
-//     const dummyToken = 'dummyAccessToken';
-
-//     spyOn(service, 'getAccessToken');
-
-//     storageServiceMock.setItem('miAppAccessToken', dummyToken);
-
-//     service.getProfile().subscribe(response => {
-//       expect(response).toBeTruthy();
-//       expect(response).toEqual(mockSuccesResponse.username);
-//       expect(service.profile()).toEqual(mockSuccesResponse.username);
-//       expect(service.isLoggedIn()).toEqual(true);
-//     });
-//     const req = httpMock.expectOne(`${environment.apiUrl}/profile/`);
-//     expect(req.request.method).toBe('GET');
-//     req.flush(mockSuccesResponse);
-//     expect(service.getAccessToken).toHaveBeenCalled();
-//     expect(storageServiceMock.getItem).toHaveBeenCalled();
-
-//   });
-// });
+  it('should fail to get profile when not logged in', async () => {
+    try {
+      await lastValueFrom(service.getProfile());
+      fail('Expected getProfile to throw');
+    } catch (err: any) {
+      expect(err.status).toBe(401);
+      expect(service.isLoggedIn()).toBeFalse();
+    }
+  });
+});

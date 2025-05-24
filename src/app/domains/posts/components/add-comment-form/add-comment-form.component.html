@@ -1,28 +1,38 @@
+<!-- src/app/domains/posts/components/add-comment-form/add-comment-form.component.html -->
 <div class="p-6">
-    <h1 class="font-extrabold text-4xl">Add New Comment:</h1>
-    <form (ngSubmit)="sendComment()" [formGroup]="addCommentForm">
-        <div class="mb-4">
-            <label for="comment" class="block text-gray-700 text-sm font-bold mb-2">Comment:</label>
-            <input type="text" id="comment" formControlName="comment"
-                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                placeholder="New Comment">
-        </div>
-        <div class="flex items-center justify-end">
-            <button type="submit" [disabled]="addCommentForm.invalid || status() === 'loading'"
-                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                @if(status() !== 'loading'){
-                <span>
-                    Submit
-                </span>
-            } @else {
-                <span>
-                    Sending
-                </span>
-            }
-            </button>
-            <button type="reset" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded ml-2">
-                Cancel
-            </button>
-        </div>
-    </form>
+  <h1 class="font-extrabold text-4xl">Add New Comment:</h1>
+  <form (ngSubmit)="sendComment()" [formGroup]="addCommentForm">
+    <div class="mb-4">
+      <label for="comment" class="block text-gray-700 text-sm font-bold mb-2">Comment:</label>
+      <input
+        id="comment-input"
+        type="text"
+        formControlName="comment"
+        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+        placeholder="New Comment"
+        />
+    </div>
+    <div class="flex items-center justify-end">
+      <button
+        id="submit-btn"
+        type="submit"
+        [disabled]="addCommentForm.invalid || status() === 'loading'"
+        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        >
+        @if (status() !== 'loading') {
+          <span>Submit</span>
+        }
+        @if (status() === 'loading') {
+          <span>Sending</span>
+        }
+      </button>
+      <button
+        id="reset-btn"
+        type="reset"
+        class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded ml-2"
+        >
+        Cancel
+      </button>
+    </div>
+  </form>
 </div>

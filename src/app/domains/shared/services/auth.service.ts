@@ -35,11 +35,11 @@ export class AuthService {
     this.clearTokens();
   }
 
-  private saveTokens(accessToken: string, refreshToken: string) {
+  saveTokens(accessToken: string, refreshToken: string) {
     this.storageService.setItem(this.ACCESS_TOKEN_KEY, accessToken);
     this.storageService.setItem(this.REFRESH_TOKEN_KEY, refreshToken);
   }
-  private saveAccessToken(accessToken: string) {
+  saveAccessToken(accessToken: string) {
     this.storageService.setItem(this.ACCESS_TOKEN_KEY, accessToken);
   }
 
@@ -56,20 +56,21 @@ export class AuthService {
     this.storageService.removeItem(this.REFRESH_TOKEN_KEY);
   }
 
-  getProfile(): Observable<string | null> {
+  getProfile(): Observable<{ username: string }> {
     const accessToken = this.getAccessToken();
-    if (!accessToken) {
-      return of(null);
-    }
     return this.http.get<{ username: string }>(`${this.apiUrl}/profile/`).pipe(
-      map((response) => response.username),
-      tap((username) => {
-        this.profile.set(username);
+      tap((response) => {
+        this.profile.set(response.username);
         this.isLoggedIn.set(true);
       }),
-      catchError((err) => {
-        this.LocalLogout();
-        return of(null);
+      catchError((err: HttpErrorResponse) => {
+        if (err.status === 401) {
+          this.LocalLogout();
+          this.error.set('Session expired, please login again');
+        } else {
+          this.error.set('Failed to fetch profile');
+        }
+        return throwError(() => err);
       })
     );
   }
@@ -78,7 +79,7 @@ export class AuthService {
     return this.http.post<{ access: string, refresh: string }>(`${this.apiUrl}/token/`, credentials).pipe(
       tap((response) => {
         this.saveTokens(response.access, response.refresh);
-        this.getProfile().subscribe();
+        this.isLoggedIn.set(true);
       }),
       map((response) => response),
       catchError((err: HttpErrorResponse) => {
@@ -107,23 +108,18 @@ export class AuthService {
     )
   }
 
-  refreshToken(): Observable<string | null> {
-    {
+  refreshToken(): Observable<{ access: string }> {
       const refreshToken = this.getRefreshToken();
-      if (!refreshToken) {
-        this.LocalLogout();
-        return of(null);
-      }
       return this.http.post<{ access: string }>(`${this.apiUrl}/token/refresh/`, { refresh: refreshToken }).pipe(
-        map((response) => {
+        tap((response) => {
           this.saveAccessToken(response.access);
           this.isLoggedIn.set(true);
-          return response.access;
-        }), catchError((err: HttpErrorResponse) => {
-          this.LocalLogout();
-          return of(null);
+          this.getProfile().subscribe();
+        }),
+        catchError((err: HttpErrorResponse) => {
+          this.LocalLogout;
+          return throwError(() => err);
         })
       );
-    }
   }
 }

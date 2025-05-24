@@ -1,1 +1,96 @@
-<app-register-form/>
+<div class="flex items-center justify-center h-screen w-screen">
+    <form [formGroup]="registerForm" (ngSubmit)="register()" novalidate class="w-md px-8 p-n border border-neutral-900">
+      <div class="relative -top-5 rounded-2xl w-fit p-1 text-lg bg-white">
+        User registration
+      </div>
+  
+      <div class="relative z-0 w-full mb-5">
+        <input type="email" id="username" formControlName="username"
+          class="block py-2.5 px-0 w-full text-md text-gray-900 bg-transparent border-0 border-b-2 border-gray-400 appearance-none focus:outline-none focus:ring-0 peer"
+          placeholder=" " />
+        <label for="username"
+          class="peer-focus:font-medium absolute text-md text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+          Email address
+        </label>
+        @if (registerForm.get('username')?.hasError('required') && (registerForm.get('username')?.touched || registerForm.get('username')?.dirty)) {
+          <p
+            class="text-red-300 text-sm mt-1">
+            Email is required.
+          </p>
+        }
+        @if (registerForm.get('username')?.hasError('email') && (registerForm.get('username')?.touched || registerForm.get('username')?.dirty)) {
+          <p
+            class="text-red-300 text-sm mt-1">
+            Please enter a valid email.
+          </p>
+        }
+      </div>
+  
+      <div class="relative z-0 w-full mb-5">
+        <input type="password" id="password" formControlName="password"
+          class="block py-2.5 px-0 w-full text-md text-gray-900 bg-transparent border-0 border-b-2 border-gray-400 appearance-none focus:outline-none focus:ring-0 peer"
+          placeholder=" " />
+        <label for="password"
+          class="peer-focus:font-medium absolute text-md text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+          Password
+        </label>
+        @if (registerForm.get('password')?.hasError('required') && (registerForm.get('password')?.touched || registerForm.get('password')?.dirty)) {
+          <p
+            class="text-red-300 text-sm mt-1">
+            Password is required.
+          </p>
+        }
+      </div>
+  
+      <div class="relative z-0 w-full mb-5">
+        <input type="password" id="confirmPassword" formControlName="confirmPassword"
+          class="block py-2.5 px-0 w-full text-md text-gray-900 bg-transparent border-0 border-b-2 border-gray-400 appearance-none focus:outline-none focus:ring-0 peer"
+          placeholder=" " />
+        <label for="confirmPassword"
+          class="peer-focus:font-medium absolute text-md text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+          Confirm password
+        </label>
+        @if (registerForm.get('confirmPassword')?.hasError('required') && (registerForm.get('confirmPassword')?.touched || registerForm.get('confirmPassword')?.dirty)) {
+          <p
+            class="text-red-300 text-sm mt-1">
+            Confirm password is required.
+          </p>
+        }
+      </div>
+  
+      @if (registerForm.hasError('passwordsMismatch') && (registerForm.get('confirmPassword')?.touched || registerForm.get('confirmPassword')?.dirty)) {
+        <p
+          class="text-red-300 text-sm mb-3 -mt-2 text-center">
+          Passwords do not match.
+        </p>
+      }
+  
+      @if (status() === 'failed') {
+        <p class="text-red-300 text-center mb-3">
+          {{ error() }}
+        </p>
+      }
+  
+      <div class="flex items-center justify-around">
+        <button type="submit" [disabled]="registerForm.invalid || status() === 'loading'"
+          class="cursor-pointer bg-neutral-400 font-medium text-md w-auto px-5 py-2.5 text-center disabled:opacity-50 disabled:cursor-not-allowed">
+          @if (status() === 'loading') {
+            <span>Registrando...</span>
+          }
+          @if (status() !== 'loading') {
+            <span>Submit</span>
+          }
+        </button>
+        <button type="reset"
+          class="cursor-pointer bg-neutral-400 font-medium text-md w-auto px-5 py-2.5 text-center">
+          Cancel
+        </button>
+      </div>
+  
+      <div class="mx-auto w-max m-2">
+        <span>Have an account?
+          <a routerLink="/login" class="text-blue-300 hover:text-blue-200 underline">Log In</a>
+        </span>
+      </div>
+    </form>
+  </div>

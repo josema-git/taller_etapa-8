@@ -91,6 +91,7 @@ export default class AddPostComponent {
 
   addPost() {
     if (this.postForm.invalid) {
+      console.log('Form is invalid');
       this.postForm.markAllAsTouched();
       return;
     }
@@ -104,7 +105,11 @@ export default class AddPostComponent {
       group_permission: formValues.group_permission,
       author_permission: formValues.author_permission,
     });
-    this.postService.addPost();
-    this.router.navigate(['/']);
+    this.postService.addPost().subscribe(
+      () => {
+        console.log('Post added successfully');
+        this.router.navigate(['/']);
+      }
+    );
   }
 }

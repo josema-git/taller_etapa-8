@@ -1,49 +1,110 @@
 <div class="p-6">
-    <a class="p-6 text-blue-700 underline" routerLink="/">&lt; Back</a>
-    
-    @if(postsStatus() === 'loading') {
-        <div class="my-4 text-center text-lg text-gray-600">Loading post...</div>
+    <a id="back-link" class="p-6 text-blue-700 underline" routerLink="/">&lt; Back</a>
+  
+    <!-- POSTS LOADING INDICATOR -->
+    @if (postsStatus() === 'loading') {
+      <div
+        id="posts-loading"
+        class="my-4 text-center text-lg text-gray-600"
+      >
+        Loading post...
+      </div>
     } @else {
-        @if(post().permission_level > 0) {
-            <app-post [post]="post()" [detail]=true />
-            
-            @if(editing() !== post().id) {
-                <h2 class="text-3xl flex font-bold text-gray-900 justify-center">Comments</h2>
-                
-                @if(commentsStatus() === 'loading') {
-                    <div class="my-4 text-center text-lg text-gray-600">Loading comments...</div>
-                } @else {
-                    @for(comment of commentsResponse().results; track comment) {
-                        <app-comment [comment]="comment" />
-                    }
-                    <div class="flex flex-col items-center">
-                        <div class="inline-flex mt-2">
-                            <button (click)="getComments(commentsResponse().previous)" [disabled]="!commentsResponse().previous"
-                                class="flex items-center justify-center text-sm font-medium p-3">
-                                &lt;
-                            </button>
-                            <span class="text-sm text-gray-700 items-center flex">
-                                <span class="font-semibold text-gray-900 items-center">
-                                    {{commentsResponse().start_page}}-{{commentsResponse().start_page + commentsResponse().results.length}} of {{commentsResponse().count}}
-                                </span>
-                            </span>
-                            <button (click)="getComments(commentsResponse().next)" [disabled]="!commentsResponse().next"
-                                class="flex items-center justify-center text-sm font-medium p-3">
-                                &gt;
-                            </button>
-                        </div>
-                    </div>
-                    @if(isloggedIn()){
-                        <app-add-comment-form/>
-                    }
-                }
-            } @else {
-                <app-edit-post />
-            }
-        } @else {
-            <div class="flex items-center justify-center">
-                <h1 class="text-4xl font-extrabold text-gray-900">Post not found</h1>
+      <!-- NOT FOUND -->
+      @if (post().permission_level <= 0) {
+        <div
+          id="not-found"
+          class="flex items-center justify-center"
+        >
+          <h1 class="text-4xl font-extrabold text-gray-900">
+            Post not found
+          </h1>
+        </div>
+      } @else {
+        <!-- VIEW OR EDIT MODE -->
+        <app-post
+          id="the-post"
+          [post]="post()"
+          [detail]="true"
+        ></app-post>
+  
+        @if (editing() !== post().id) {
+          <!-- COMMENTS HEADER -->
+          <h2
+            id="comments-header"
+            class="text-3xl flex font-bold text-gray-900 justify-center"
+          >
+            Comments
+          </h2>
+  
+          <!-- COMMENTS LOADING -->
+          @if (commentsStatus() === 'loading') {
+            <div
+              id="comments-loading"
+              class="my-4 text-center text-lg text-gray-600"
+            >
+              Loading comments...
             </div>
+          } @else {
+            <!-- COMMENTS LIST -->
+            <div id="comments-list">
+              @for (comment of commentsResponse().results; track comment.id) {
+                <app-comment
+                  id="comment-{{comment.id}}"
+                  [comment]="comment"
+                ></app-comment>
+              }
+            </div>
+  
+            <!-- COMMENTS PAGINATION -->
+            <div
+              id="comments-pager"
+              class="flex flex-col items-center"
+            >
+              <div class="inline-flex mt-2">
+                <button
+                  id="comments-prev"
+                  (click)="getComments(commentsResponse().previous)"
+                  [disabled]="!commentsResponse().previous"
+                  class="flex items-center justify-center text-sm font-medium p-3"
+                >&lt;</button>
+  
+                <span
+                  id="comments-page-info"
+                  class="text-sm text-gray-700 items-center flex"
+                >
+                  <span
+                    class="font-semibold text-gray-900 items-center"
+                  >
+                    {{commentsResponse().start_page}}
+                    -
+                    {{commentsResponse().start_page + commentsResponse().results.length}}
+                    of
+                    {{commentsResponse().count}}
+                  </span>
+                </span>
+  
+                <button
+                  id="comments-next"
+                  (click)="getComments(commentsResponse().next)"
+                  [disabled]="!commentsResponse().next"
+                  class="flex items-center justify-center text-sm font-medium p-3"
+                >&gt;</button>
+              </div>
+            </div>
+  
+            <!-- ADD-COMMENT FORM (only if logged in) -->
+            @if (isloggedIn()) {
+              <app-add-comment-form
+                id="add-comment-form"
+              ></app-add-comment-form>
+            }
+          }
+        } @else {
+          <!-- EDIT-POST FORM -->
+          <app-edit-post id="edit-post-form"></app-edit-post>
         }
+      }
     }
-</div>
+  </div>
+  
