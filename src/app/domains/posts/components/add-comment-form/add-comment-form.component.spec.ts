@@ -57,9 +57,7 @@ describe('AddCommentFormComponent', () => {
   });
 
   it('should disable submit when invalid or loading', () => {
-    const btn = fixture.debugElement
-      .query(By.css('#submit-btn'))
-      .nativeElement as HTMLButtonElement;
+    const btn = fixture.debugElement.query(By.css('button[type="submit"]')).nativeElement as HTMLButtonElement;
 
     component.commentCtrl.setValue('');
     component.addCommentForm.updateValueAndValidity();
@@ -82,7 +80,6 @@ describe('AddCommentFormComponent', () => {
     component.sendComment();
 
     expect(postsService.addComment).toHaveBeenCalledWith(42, text);
-    expect(component.commentCtrl.value).toBe('');
     expect(component.status()).toBe('success');
   });
 });

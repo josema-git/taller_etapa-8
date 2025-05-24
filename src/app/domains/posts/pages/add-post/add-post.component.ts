@@ -3,10 +3,11 @@ import { PostsService } from '@/shared/services/posts.service';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { RouterLinkWithHref } from '@angular/router';
 import { Router } from '@angular/router';
+import { QuillModule } from 'ngx-quill';
 
 @Component({
   selector: 'app-add-post',
-  imports: [ReactiveFormsModule, RouterLinkWithHref],
+  imports: [ReactiveFormsModule, RouterLinkWithHref, QuillModule],
   templateUrl: './add-post.component.html',
 })
 export default class AddPostComponent {

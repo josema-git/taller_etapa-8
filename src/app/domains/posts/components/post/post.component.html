@@ -1,4 +1,4 @@
-<div class="block p-6 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-100">
+<div class="block p-6 border border-gray-200 rounded-lg">
     <div class="flex items-center justify-between">
         <h5 id="post-title" class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
             {{post().title}}
@@ -15,20 +15,7 @@
             </p>
         </div>
     </div>
-    @if(this.detail()){
-        <p id="post-content" class="font-normal text-gray-700">
-            {{post().content}}
-        </p>
-    } @else{
-        <p id="post-excerpt" class="font-normal text-gray-700">
-            {{post().excerpt}}
-            @if(post().excerpt !== post().content ){
-            <a id="read-more" class="text-blue-700 underline" [routerLink]='"post/" + post().id'>
-                Read more
-            </a>
-            }
-        </p>
-    }
+    <div class="ql-editor prose max-w-none" [innerHTML]="sanitizedContent"></div>
     <div class="flex items-center justify-between mt-4">
         <div class="flex items-center gap-10">
             <div class="flex relative items-center gap-2">
@@ -55,7 +42,8 @@
                                 </button>
                                 <span class="text-sm flex items-center text-gray-700 dark:text-gray-400">
                                     <span id="likes-page-info" class="font-semibold text-gray-900">
-                                        {{likesResponse().start_page}}-{{likesResponse().start_page + likesResponse().results.length}}
+                                        {{likesResponse().start_page}}-{{likesResponse().start_page +
+                                        likesResponse().results.length}}
                                         of {{likesResponse().count}}
                                     </span>
                                 </span>
@@ -74,12 +62,9 @@
             </p>
         </div>
         <div class="flex items-center gap-2" [hidden]="post().permission_level < 2">
-            <button id="btn-like" type="button"
-                [class.text-green-500]="post().is_liked"
-                [class.hover:text-gray-700]="post().is_liked"
-                [class.text-gray-700]="!post().is_liked"
-                [class.hover:text-green-500]="!post().is_liked"
-                (click)="toggleLike()"
+            <button id="btn-like" type="button" [class.text-green-500]="post().is_liked"
+                [class.hover:text-gray-700]="post().is_liked" [class.text-gray-700]="!post().is_liked"
+                [class.hover:text-green-500]="!post().is_liked" (click)="toggleLike()"
                 class="w-10 h-10 font-medium rounded-full text-sm p-2.5 flex">
                 <svg class="w-50" aria-hidden="true" fill="currentColor" viewBox="0 0 18 18">
                     <path
@@ -88,39 +73,33 @@
                 <span class="sr-only">Like post</span>
             </button>
             @if(!detail()){
-                <button id="btn-comment" type="button"
-                    [routerLink]='"post/" + post().id'
-                    (click)="resetEditingPost()"
-                    class="text-gray-700 w-10 h-10 hover:text-green-300 font-medium rounded-full text-sm py-1 pl-1.5 pr-1">
-                    <svg version="1.1" viewBox="0 0 16.1 13.1" fill="CurrentColor">
-                        <path
-                            d="m7.8 0.1c-4.2 0-7.5 2.6-7.5 5.8 0 1.6 1.2 3.2 2.5 4.3-0.1 1.1-1.8 1.6-2.5 2.3 1.5 0 3.3-0.5 4.3-1.3 0.8 0.2 2.4 0.5 3.3 0.5 4.2 0 7.5-2.6 7.5-5.8s-3.4-5.8-7.6-5.8z" />
-                    </svg>
-                    <span class="sr-only">Comment post</span>
-                </button>
+            <button id="btn-comment" type="button" [routerLink]='"post/" + post().id' (click)="resetEditingPost()"
+                class="text-gray-700 w-10 h-10 hover:text-green-300 font-medium rounded-full text-sm py-1 pl-1.5 pr-1">
+                <svg version="1.1" viewBox="0 0 16.1 13.1" fill="CurrentColor">
+                    <path
+                        d="m7.8 0.1c-4.2 0-7.5 2.6-7.5 5.8 0 1.6 1.2 3.2 2.5 4.3-0.1 1.1-1.8 1.6-2.5 2.3 1.5 0 3.3-0.5 4.3-1.3 0.8 0.2 2.4 0.5 3.3 0.5 4.2 0 7.5-2.6 7.5-5.8s-3.4-5.8-7.6-5.8z" />
+                </svg>
+                <span class="sr-only">Comment post</span>
+            </button>
             }
-            <a id="btn-edit"
-               [routerLink]="['/post/', post().id]"
-               [hidden]="post().permission_level < 3"
-               (click)="toggleEditingPost()"
-               class="text-gray-700 w-10 h-10 hover:text-green-500 font-medium rounded-full text-sm flex">
-               <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-               enable-background="new 0 0 64 64" id="Layer_1" version="1.1" viewBox="0 0 64 64"
-               fill="currentColor">
-               <g>
-                   <path
-                       d="M55.736,13.636l-4.368-4.362c-0.451-0.451-1.044-0.677-1.636-0.677c-0.592,0-1.184,0.225-1.635,0.676l-3.494,3.484   l7.639,7.626l3.494-3.483C56.639,15.998,56.639,14.535,55.736,13.636z" />
-                   <polygon points="21.922,35.396 29.562,43.023 50.607,22.017 42.967,14.39  " />
-                   <polygon points="20.273,37.028 18.642,46.28 27.913,44.654  " />
-                   <path
-                       d="M41.393,50.403H12.587V21.597h20.329l5.01-5H10.82c-1.779,0-3.234,1.455-3.234,3.234v32.339   c0,1.779,1.455,3.234,3.234,3.234h32.339c1.779,0,3.234-1.455,3.234-3.234V29.049l-5,4.991V50.403z" />
-               </g>
-           </svg>
+            <a id="btn-edit" [routerLink]="['/post/', post().id]" [hidden]="post().permission_level < 3"
+                (click)="toggleEditingPost()"
+                class="text-gray-700 w-10 h-10 hover:text-green-500 font-medium rounded-full text-sm flex">
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                    enable-background="new 0 0 64 64" id="Layer_1" version="1.1" viewBox="0 0 64 64"
+                    fill="currentColor">
+                    <g>
+                        <path
+                            d="M55.736,13.636l-4.368-4.362c-0.451-0.451-1.044-0.677-1.636-0.677c-0.592,0-1.184,0.225-1.635,0.676l-3.494,3.484   l7.639,7.626l3.494-3.483C56.639,15.998,56.639,14.535,55.736,13.636z" />
+                        <polygon points="21.922,35.396 29.562,43.023 50.607,22.017 42.967,14.39  " />
+                        <polygon points="20.273,37.028 18.642,46.28 27.913,44.654  " />
+                        <path
+                            d="M41.393,50.403H12.587V21.597h20.329l5.01-5H10.82c-1.779,0-3.234,1.455-3.234,3.234v32.339   c0,1.779,1.455,3.234,3.234,3.234h32.339c1.779,0,3.234-1.455,3.234-3.234V29.049l-5,4.991V50.403z" />
+                    </g>
+                </svg>
                 <span class="sr-only">Edit post</span>
             </a>
-            <button id="btn-delete" type="button"
-                [hidden]="post().permission_level < 3"
-                (click)="toggleDeleting()"
+            <button id="btn-delete" type="button" [hidden]="post().permission_level < 3" (click)="toggleDeleting()"
                 class="text-gray-700 w-10 h-10 hover:text-red-600 font-medium rounded-full text-sm py-1 pl-1.5 pr-1">
                 <svg fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
                     <g data-name="Layer 17" id="Layer_17">

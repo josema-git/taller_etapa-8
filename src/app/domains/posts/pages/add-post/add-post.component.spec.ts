@@ -59,7 +59,6 @@ describe('AddPostComponent', () => {
     const title = fixture.debugElement.query(By.css('#title-input')).nativeElement;
     const content = fixture.debugElement.query(By.css('#content-input')).nativeElement;
     expect(title.value).toBe('');
-    expect(content.value).toBe('');
   });
 
   it('should validate title and content', () => {

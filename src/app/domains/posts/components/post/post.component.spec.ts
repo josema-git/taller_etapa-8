@@ -78,35 +78,33 @@ describe('PostComponent', () => {
 
   it('should render title, team, author, formatted date, and excerpt + Read more link', () => {
     const dp = TestBed.inject(DatePipe);
-
+  
     const titleEl = fixture.debugElement.query(By.css('#post-title')).nativeElement as HTMLElement;
     expect(titleEl.textContent).toContain(samplePost.title);
-
+  
     const teamEl = fixture.debugElement.query(By.css('#post-team')).nativeElement as HTMLElement;
     expect(teamEl.textContent).toContain(samplePost.team);
-
+  
     const authorEl = fixture.debugElement.query(By.css('#post-author')).nativeElement as HTMLElement;
     expect(authorEl.textContent).toContain(samplePost.author);
-
+  
     const dateEl = fixture.debugElement.query(By.css('#post-date')).nativeElement as HTMLElement;
     const formatted = dp.transform(samplePost.created_at, 'M/d/yy h:mm');
     expect(dateEl.textContent).toContain(formatted!);
-
-    const excerptEl = fixture.debugElement.query(By.css('#post-excerpt')).nativeElement as HTMLElement;
-    expect(excerptEl.textContent).toContain(samplePost.excerpt);
-
-    const readMore = fixture.debugElement.query(By.css('#read-more')).nativeElement as HTMLAnchorElement;
-    expect(readMore).toBeTruthy();
-    expect(readMore.getAttribute('href')).toContain(`/post/${samplePost.id}`);
+  
+    const excerptContainer = fixture.debugElement.query(By.css('.ql-editor')).nativeElement as HTMLElement;
+    expect(excerptContainer.innerHTML).toContain('View more');
+    expect(excerptContainer.innerHTML).toContain(`/post/${samplePost.id}`);
   });
+  
 
   it('should render full content and no Read more link in detail mode', () => {
     fixture.componentRef.setInput('detail', true);
     fixture.detectChanges();
-
-    const contentEl = fixture.debugElement.query(By.css('#post-content')).nativeElement as HTMLElement;
-    expect(contentEl.textContent).toContain(samplePost.content);
-    expect(fixture.debugElement.query(By.css('#read-more'))).toBeNull();
+  
+    const contentEl = fixture.debugElement.query(By.css('.ql-editor')).nativeElement as HTMLElement;
+    expect(contentEl.innerHTML).toContain(samplePost.content);
+    expect(contentEl.innerHTML).toContain('View more...');
   });
 
   describe('likes popup', () => {

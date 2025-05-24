@@ -3,6 +3,18 @@ import { Post, Like, PaginatedResponse } from '@/shared/models/post';
 import { DatePipe } from '@angular/common';
 import { PostsService } from '@/shared/services/posts.service';
 import { RouterLinkWithHref } from '@angular/router';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+// @ts-ignore
+import truncate from 'html-truncate';
+
+
+function generateExcerpt(html: string, length: number = 200, postId?: number): string {
+  const truncated = truncate(html, length);
+  const viewMore = postId
+    ? `<p><a href="/post/${postId}" class="text-blue-400" >View more...</a></p>`
+    : '';
+  return truncated + viewMore;
+}
 
 @Component({
   selector: 'app-post',
@@ -16,6 +28,15 @@ export class PostComponent {
   openPopup = signal(false);
   deleting = signal(false);
   editing = this.postsService.editingPost;
+  sanitizedContent: SafeHtml = '';
+
+  constructor(private sanitizer: DomSanitizer) { }
+
+  ngOnInit() {
+    const raw = this.post().content;
+    const html = this.detail() ? raw : generateExcerpt(raw, 200, this.post().id);
+    this.sanitizedContent = this.sanitizer.bypassSecurityTrustHtml(html);
+  }
 
   likesResponse = signal<PaginatedResponse<Like>>({
     start_page: 0,
@@ -41,7 +62,7 @@ export class PostComponent {
   }
 
   getLikes(url?: string | null) {
-    this.postsService.getLikesByPostId(this.post().id, url ).subscribe({
+    this.postsService.getLikesByPostId(this.post().id, url).subscribe({
       next: (res) => {
         this.likesResponse.set(res);
       },

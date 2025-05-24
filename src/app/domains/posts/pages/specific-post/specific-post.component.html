@@ -48,7 +48,7 @@
           } @else {
             <!-- COMMENTS LIST -->
             <div id="comments-list">
-              @for (comment of commentsResponse().results; track comment.id) {
+              @for (comment of commentsResponse().results; track comment) {
                 <app-comment
                   id="comment-{{comment.id}}"
                   [comment]="comment"

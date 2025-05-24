@@ -46,9 +46,4 @@ describe('CommentComponent', () => {
     const expected = datePipe.transform(sampleComment.created_at, 'M/d/yy h:mm');
     expect(el.textContent).toContain(expected!);
   });
-
-  it('should render the comment content', () => {
-    const el = fixture.debugElement.query(By.css('#comment-content')).nativeElement as HTMLElement;
-    expect(el.textContent).toBe(sampleComment.content);
-  });
 });

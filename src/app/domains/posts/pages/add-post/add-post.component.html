@@ -34,12 +34,16 @@
       <label for="blogContent" class="mb-2 block text-3xl font-medium text-gray-700">
         Content<span class="text-red-500">*</span>
       </label>
-      <textarea
+      <quill-editor
         id="content-input"
         formControlName="content"
-        rows="6"
-        class="block w-full rounded-md border border-gray-700 p-2.5 shadow-sm sm:text-lg"
-      ></textarea>
+        [placeholder]="'Write your content here...'"
+        class="block rounded-xl border border-gray-400 p-2.5 shadow-sm text-lg"
+        [style]="{ height: '300px' }"
+        [theme]="'snow'"
+        [readOnly]="false"
+        [maxLength]="1000"
+        />
       @if (contentCtrl.invalid && (contentCtrl.dirty || contentCtrl.touched)) {
         <div class="mt-1 text-xs text-red-500">
           @if (contentCtrl.errors?.['required']) {
