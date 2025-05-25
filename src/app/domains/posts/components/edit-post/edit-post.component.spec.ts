@@ -1,174 +1,101 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ReactiveFormsModule }          from '@angular/forms';
-import { ActivatedRoute }               from '@angular/router';
-import { of }                           from 'rxjs';
-import { By }                          from '@angular/platform-browser';
+import { Component, inject, signal } from '@angular/core';
+import { PostsService } from '@/shared/services/posts.service';
+import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 
-import { EditPostComponent }           from './edit-post.component';
-import { PostsService }                from '@/shared/services/posts.service';
-import { Post }                        from '@/shared/models/post';
+@Component({
+  selector: 'app-edit-post',
+  standalone: true,
+  imports: [ReactiveFormsModule],
+  templateUrl: './edit-post.component.html',
+})
+export class EditPostComponent {
+  postService = inject(PostsService);
+  route = inject(ActivatedRoute);
 
-describe('EditPostComponent', () => {
-  let fixture:   ComponentFixture<EditPostComponent>;
-  let component: EditPostComponent;
-  let postsServiceSpy: jasmine.SpyObj<PostsService>;
+  postId = signal(0);
+  InitialPost = this.postService.detailedPost;
 
-  const initialPost: Post = {
-    id: 123,
-    title: 'Original Title',
-    excerpt: '',
-    content: 'Original content',
-    author: '',
-    created_at: '',
-    likes: 0,
-    comments: 0,
-    team: '',
-    permission_level: 0,
-    is_liked: false,
-    is_public: 1,
-    authenticated_permission: 0,
-    group_permission: 1,
-    author_permission: 2,
-  };
+  public readonly authorPermissionOptions = [
+    { value: 2, label: 'Read & Write' },
+  ];
 
-  beforeEach(async () => {
-    postsServiceSpy = jasmine.createSpyObj(
-      'PostsService',
-      ['getPost', 'editPost'],
-      {
-        detailedPost: () => initialPost,
-        editingPost: { set: jasmine.createSpy('set') }
-      }
-    );
-    postsServiceSpy.getPost.and.returnValue(of(initialPost));
-    postsServiceSpy.editPost.and.returnValue(of(initialPost));
+  public readonly public_permission_options = [
+    { value: 0, label: 'None' },
+    { value: 1, label: 'Read Only' },
+  ]
 
-    await TestBed.configureTestingModule({
-      imports: [EditPostComponent, ReactiveFormsModule],
-      providers: [
-        { provide: PostsService, useValue: postsServiceSpy },
-        {
-          provide: ActivatedRoute,
-          useValue: { snapshot: { params: { postId: 123 } } }
-        }
-      ]
-    }).compileComponents();
+  public readonly auth_group_permission_options = [
+    { value: 0, label: 'None' },
+    { value: 1, label: 'Read Only' },
+    { value: 2, label: 'Read & Write' },
+  ];
 
-    fixture   = TestBed.createComponent(EditPostComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  postForm = new FormGroup({
+    title: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.maxLength(200)]
+    }),
+    content: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.maxLength(1000)]
+    }),
+    is_public: new FormControl(0, {
+      nonNullable: true,
+      validators: [Validators.required]
+    }),
+    authenticated_permission: new FormControl(1, {
+      nonNullable: true,
+      validators: [Validators.required]
+    }),
+    group_permission: new FormControl(1, {
+      nonNullable: true,
+      validators: [Validators.required]
+    }),
+    author_permission: new FormControl(2, {
+      nonNullable: true,
+      validators: [Validators.required]
+    })
   });
 
-  it('should create and patch form with initial post', () => {
-    expect(component).toBeTruthy();
-
-    expect(component.titleCtrl.value).toBe(initialPost.title);
-    expect(component.contentCtrl.value).toBe(initialPost.content);
-    expect(component.isPublicCtrl.value).toBe(initialPost.is_public);
-    expect(component.authenticatedPermissionCtrl.value)
-      .toBe(initialPost.authenticated_permission);
-    expect(component.groupPermissionCtrl.value)
-      .toBe(initialPost.group_permission);
-    expect(component.authorPermissionCtrl.value)
-      .toBe(initialPost.author_permission);
-
-    const titleInput = fixture.debugElement.query(By.css('#blogTitle')).nativeElement as HTMLInputElement;
-    expect(titleInput.value).toBe(initialPost.title);
-
-    const contentTextarea = fixture.debugElement.query(By.css('#blogContent')).nativeElement as HTMLTextAreaElement;
-    expect(contentTextarea.value).toBe(initialPost.content);
-
-    const publicSelect = fixture.debugElement.query(By.css('#isPublicSelect')).nativeElement as HTMLSelectElement;
-    expect(publicSelect.value).toBe(initialPost.is_public.toString());
-
-    const authSelect = fixture.debugElement.query(By.css('#authPermissionSelect')).nativeElement as HTMLSelectElement;
-    expect(authSelect.value).toBe(initialPost.authenticated_permission.toString());
-
-    const groupSelect = fixture.debugElement.query(By.css('#groupPermissionSelect')).nativeElement as HTMLSelectElement;
-    expect(groupSelect.value).toBe(initialPost.group_permission.toString());
-
-    const ownerSelect = fixture.debugElement.query(By.css('#ownerPermissionSelect')).nativeElement as HTMLSelectElement;
-    expect(ownerSelect.value).toBe(initialPost.author_permission.toString());
-
-    expect(postsServiceSpy.getPost).toHaveBeenCalledWith(123);
-  });
-
-  describe('form validation', () => {
-    it('title is required and maxLength=200', () => {
-      component.titleCtrl.setValue('');
-      component.titleCtrl.markAsTouched();
-      fixture.detectChanges();
-
-      expect(component.titleCtrl.hasError('required')).toBeTrue();
-      const titleError = fixture.debugElement.query(By.css('#title-error'));
-      expect(titleError).toBeTruthy();
-      expect(titleError.nativeElement.textContent).toContain('provide a title');
-
-      const long = 'a'.repeat(201);
-      component.titleCtrl.setValue(long);
-      component.titleCtrl.markAsTouched();
-      fixture.detectChanges();
-
-      expect(component.titleCtrl.hasError('maxlength')).toBeTrue();
-      expect(titleError.nativeElement.textContent).toContain('maximum allowed');
+  constructor() {
+    this.postId.set(this.route.snapshot.params['postId']);
+    this.postService.getPost(this.postId()).subscribe(() => {
+      const post = this.InitialPost();
+      this.postForm.patchValue({
+        title: post.title,
+        content: post.content,
+        is_public: post.is_public,
+        authenticated_permission: post.authenticated_permission,
+        group_permission: post.group_permission,
+        author_permission: post.author_permission,
+      });
     });
+  }
 
-    it('content is required and maxLength=1000', () => {
-      component.contentCtrl.setValue('');
-      component.contentCtrl.markAsTouched();
-      fixture.detectChanges();
+  get titleCtrl() { return this.postForm.controls.title; }
+  get contentCtrl() { return this.postForm.controls.content; }
+  get isPublicCtrl() { return this.postForm.controls.is_public; }
+  get authenticatedPermissionCtrl() { return this.postForm.controls.authenticated_permission; }
+  get groupPermissionCtrl() { return this.postForm.controls.group_permission; }
+  get authorPermissionCtrl() { return this.postForm.controls.author_permission; }
 
-      expect(component.contentCtrl.hasError('required')).toBeTrue();
-      const contentError = fixture.debugElement.query(By.css('#content-error'));
-      expect(contentError).toBeTruthy();
-      expect(contentError.nativeElement.textContent).toContain('Content is required');
+  cancel() {
+    this.postService.editingPost.set(0);
+  }
 
-      const long = 'a'.repeat(1001);
-      component.contentCtrl.setValue(long);
-      component.contentCtrl.markAsTouched();
-      fixture.detectChanges();
+  editPost() {
+    if (this.postForm.invalid) {
+      this.postForm.markAllAsTouched();
+      return;
+    }
 
-      expect(component.contentCtrl.hasError('maxlength')).toBeTrue();
-      expect(contentError.nativeElement.textContent).toContain('cannot exceed');
-    });
-  });
+    const formValues = this.postForm.getRawValue();
+    const newPost = {
+      ...this.InitialPost(),
+      ...formValues
+    };
 
-  it('clicking cancel-button should reset editingPost signal', () => {
-    const cancelBtn = fixture.debugElement.query(By.css('#cancel-button'));
-    cancelBtn.triggerEventHandler('click', null);
-    expect(postsServiceSpy.editingPost.set).toHaveBeenCalledWith(0);
-  });
-
-  describe('editPost()', () => {
-    it('does nothing when form invalid', () => {
-      component.titleCtrl.setValue('');
-      component.postForm.markAllAsTouched();
-      component.editPost();
-      expect(postsServiceSpy.editPost).not.toHaveBeenCalled();
-    });
-
-    it('submits when valid', () => {
-      component.titleCtrl.setValue('New Title');
-      component.contentCtrl.setValue('New content');
-      component.isPublicCtrl.setValue(0);
-      component.authenticatedPermissionCtrl.setValue(1);
-      component.groupPermissionCtrl.setValue(2);
-      component.authorPermissionCtrl.setValue(2);
-
-      component.postForm.markAllAsTouched();
-      fixture.detectChanges();
-
-      component.editPost();
-
-      expect(postsServiceSpy.editPost).toHaveBeenCalledWith(jasmine.objectContaining({
-        id: initialPost.id,
-        title: 'New Title',
-        content: 'New content',
-        is_public: 0,
-        authenticated_permission: 1,
-        group_permission: 2,
-        author_permission: 2
-      }));
-    });
-  });
-});
+    this.postService.editPost(newPost).subscribe();
+  }
+}

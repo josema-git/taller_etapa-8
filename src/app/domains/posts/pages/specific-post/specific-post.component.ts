@@ -41,6 +41,9 @@ export default class SpecificPostComponent {
       this.postId.set(this.route.snapshot.params['postId']);
       this.getPost();
     });
+    effect(() => {
+      
+    })
   }
 
   getPost() {

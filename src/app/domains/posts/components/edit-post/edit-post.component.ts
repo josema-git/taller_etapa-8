@@ -1,16 +1,18 @@
 import { Component, inject, signal } from '@angular/core';
 import { PostsService } from '@/shared/services/posts.service';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { QuillModule } from 'ngx-quill';
 
 @Component({
   selector: 'app-edit-post',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, QuillModule],
   templateUrl: './edit-post.component.html',
 })
 export class EditPostComponent {
   postService = inject(PostsService);
   route = inject(ActivatedRoute);
+  router = inject(Router);
 
   postId = signal(0);
   InitialPost = this.postService.detailedPost;
@@ -32,15 +34,20 @@ export class EditPostComponent {
 
   constructor() {
     this.postId.set(this.route.snapshot.params['postId']);
-    this.postService.getPost(this.postId()).subscribe();
-    this.postForm.patchValue({
-      title: this.InitialPost().title,
-      content: this.InitialPost().content,
-      is_public: this.InitialPost().is_public,
-      authenticated_permission: this.InitialPost().authenticated_permission,
-      group_permission: this.InitialPost().group_permission,
-      author_permission: this.InitialPost().author_permission,
-    });
+    this.postService.getPost(this.postId()).subscribe(
+      () => {
+        const post = this.postService.detailedPost();
+        this.postForm.patchValue({
+          title: post.title,
+          content: post.content,
+          is_public: post.is_public,
+          authenticated_permission: post.authenticated_permission,
+          group_permission: post.group_permission,
+          author_permission: post.author_permission
+        });
+      }
+    );
+    
   }
 
   postForm = new FormGroup({
@@ -110,6 +117,12 @@ export class EditPostComponent {
       group_permission: formValues.group_permission,
       author_permission: formValues.author_permission,
     }
-    this.postService.editPost(newPost).subscribe();
+    this.postService.editPost(newPost).subscribe(
+      () => {
+        this.postService.editingPost.set(0);
+        this.postService.detailedPost.set(newPost);
+        this.router.navigate(['/post', this.postId()]);
+      }
+    );
   }
 }

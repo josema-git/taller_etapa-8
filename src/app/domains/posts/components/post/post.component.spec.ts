@@ -101,11 +101,12 @@ describe('PostComponent', () => {
   it('should render full content and no Read more link in detail mode', () => {
     fixture.componentRef.setInput('detail', true);
     fixture.detectChanges();
-  
+
     const contentEl = fixture.debugElement.query(By.css('.ql-editor')).nativeElement as HTMLElement;
     expect(contentEl.innerHTML).toContain(samplePost.content);
-    expect(contentEl.innerHTML).toContain('View more...');
+    expect(contentEl.innerHTML).not.toContain('View more...');
   });
+
 
   describe('likes popup', () => {
     it('opens popup and loads likes on chevron click', fakeAsync(() => {

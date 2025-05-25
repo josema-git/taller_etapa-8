@@ -1,4 +1,4 @@
-import { Component, inject, input, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, signal } from '@angular/core';
 import { Post, Like, PaginatedResponse } from '@/shared/models/post';
 import { DatePipe } from '@angular/common';
 import { PostsService } from '@/shared/services/posts.service';
@@ -22,20 +22,23 @@ function generateExcerpt(html: string, length: number = 200, postId?: number): s
   templateUrl: './post.component.html',
 })
 export class PostComponent {
+  sanitizedContent = signal<SafeHtml>('');
   postsService = inject(PostsService);
   post = input.required<Post>();
   detail = input<boolean>(false);
   openPopup = signal(false);
   deleting = signal(false);
   editing = this.postsService.editingPost;
-  sanitizedContent: SafeHtml = '';
 
-  constructor(private sanitizer: DomSanitizer) { }
-
-  ngOnInit() {
-    const raw = this.post().content;
-    const html = this.detail() ? raw : generateExcerpt(raw, 200, this.post().id);
-    this.sanitizedContent = this.sanitizer.bypassSecurityTrustHtml(html);
+  constructor(private sanitizer: DomSanitizer) {
+    effect(() => {
+      const post = this.post();
+    
+      if (!post || !post.content) return;
+    
+      const html = this.detail() ? post.content : generateExcerpt(post.content, 200, post.id);
+      this.sanitizedContent.set(this.sanitizer.bypassSecurityTrustHtml(html));
+    });
   }
 
   likesResponse = signal<PaginatedResponse<Like>>({
