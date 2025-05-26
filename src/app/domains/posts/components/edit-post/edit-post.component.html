@@ -25,9 +25,8 @@
     <label for="blogContent" class="mb-2 block text-3xl font-medium text-gray-700">
       Content<span class="text-red-500">*</span>
     </label>
-    <quill-editor id="blogContent" formControlName="content" theme="snow" styles="{ minHeight: '200px' }"
+    <quill-editor id="blogContent" formControlName="content" theme="snow" [style]="{ minHeight: '200px' }"
       class="bg-white rounded-md border border-gray-700" placeholder="Write your post here..."></quill-editor>
-
     @if (contentCtrl.invalid && (contentCtrl.dirty || contentCtrl.touched)) {
     <div id="content-error" class="mt-1 text-xs text-red-500">
       @if (contentCtrl.errors?.['required']) {
