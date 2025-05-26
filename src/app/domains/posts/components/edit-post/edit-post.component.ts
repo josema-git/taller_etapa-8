@@ -15,7 +15,6 @@ export class EditPostComponent {
   router = inject(Router);
 
   postId = signal(0);
-  InitialPost = this.postService.detailedPost;
 
   public readonly authorPermissionOptions = [
     { value: 2, label: 'Read & Write' },
@@ -109,7 +108,7 @@ export class EditPostComponent {
     }
     const formValues = this.postForm.getRawValue();
     const newPost = {
-      ...this.InitialPost(),
+      ...this.postService.detailedPost(),
       title: formValues.title,
       content: formValues.content,
       is_public: formValues.is_public,

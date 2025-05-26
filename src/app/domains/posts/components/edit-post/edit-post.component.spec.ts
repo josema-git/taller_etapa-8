@@ -1,101 +1,101 @@
-import { Component, inject, signal } from '@angular/core';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { EditPostComponent } from './edit-post.component';
 import { PostsService } from '@/shared/services/posts.service';
-import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { ReactiveFormsModule } from '@angular/forms';
+import { of } from 'rxjs';
+import { Post } from '@/shared/models/post';
+import { NO_ERRORS_SCHEMA, signal } from '@angular/core';
 
-@Component({
-  selector: 'app-edit-post',
-  standalone: true,
-  imports: [ReactiveFormsModule],
-  templateUrl: './edit-post.component.html',
-})
-export class EditPostComponent {
-  postService = inject(PostsService);
-  route = inject(ActivatedRoute);
 
-  postId = signal(0);
-  InitialPost = this.postService.detailedPost;
+describe('EditPostComponent', () => {
+  let component: EditPostComponent;
+  let fixture: ComponentFixture<EditPostComponent>;
+  let postsServiceSpy: jasmine.SpyObj<PostsService>;
+  let routerSpy: jasmine.SpyObj<Router>;
+  let activatedRouteStub: any;
 
-  public readonly authorPermissionOptions = [
-    { value: 2, label: 'Read & Write' },
-  ];
+  const mockPost: Post = {
+    id: 1,
+    title: 'Test Title',
+    content: 'Test Content',
+    excerpt: '',
+    likes: 0,
+    comments: 0,
+    is_liked: false,
+    created_at: '',
+    author: '',
+    team: '',
+    permission_level: 0,
+    is_public: 1,
+    authenticated_permission: 1,
+    group_permission: 1,
+    author_permission: 2
+  };
 
-  public readonly public_permission_options = [
-    { value: 0, label: 'None' },
-    { value: 1, label: 'Read Only' },
-  ]
+  beforeEach(async () => {
+    const detailedPostSignal = signal<Post>(mockPost);
+spyOn(detailedPostSignal, 'set');
 
-  public readonly auth_group_permission_options = [
-    { value: 0, label: 'None' },
-    { value: 1, label: 'Read Only' },
-    { value: 2, label: 'Read & Write' },
-  ];
+postsServiceSpy = jasmine.createSpyObj('PostsService', ['getPost', 'editPost'], {
+  editingPost: { set: jasmine.createSpy('set') },
+  detailedPost: detailedPostSignal
+});
 
-  postForm = new FormGroup({
-    title: new FormControl('', {
-      nonNullable: true,
-      validators: [Validators.required, Validators.maxLength(200)]
-    }),
-    content: new FormControl('', {
-      nonNullable: true,
-      validators: [Validators.required, Validators.maxLength(1000)]
-    }),
-    is_public: new FormControl(0, {
-      nonNullable: true,
-      validators: [Validators.required]
-    }),
-    authenticated_permission: new FormControl(1, {
-      nonNullable: true,
-      validators: [Validators.required]
-    }),
-    group_permission: new FormControl(1, {
-      nonNullable: true,
-      validators: [Validators.required]
-    }),
-    author_permission: new FormControl(2, {
-      nonNullable: true,
-      validators: [Validators.required]
-    })
-  });
+    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
-  constructor() {
-    this.postId.set(this.route.snapshot.params['postId']);
-    this.postService.getPost(this.postId()).subscribe(() => {
-      const post = this.InitialPost();
-      this.postForm.patchValue({
-        title: post.title,
-        content: post.content,
-        is_public: post.is_public,
-        authenticated_permission: post.authenticated_permission,
-        group_permission: post.group_permission,
-        author_permission: post.author_permission,
-      });
-    });
-  }
-
-  get titleCtrl() { return this.postForm.controls.title; }
-  get contentCtrl() { return this.postForm.controls.content; }
-  get isPublicCtrl() { return this.postForm.controls.is_public; }
-  get authenticatedPermissionCtrl() { return this.postForm.controls.authenticated_permission; }
-  get groupPermissionCtrl() { return this.postForm.controls.group_permission; }
-  get authorPermissionCtrl() { return this.postForm.controls.author_permission; }
-
-  cancel() {
-    this.postService.editingPost.set(0);
-  }
-
-  editPost() {
-    if (this.postForm.invalid) {
-      this.postForm.markAllAsTouched();
-      return;
-    }
-
-    const formValues = this.postForm.getRawValue();
-    const newPost = {
-      ...this.InitialPost(),
-      ...formValues
+    activatedRouteStub = {
+      snapshot: {
+        params: { postId: '1' }
+      } as any
     };
 
-    this.postService.editPost(newPost).subscribe();
-  }
-}
+    await TestBed.configureTestingModule({
+      imports: [ReactiveFormsModule, EditPostComponent],
+      providers: [
+        { provide: PostsService, useValue: postsServiceSpy },
+        { provide: Router, useValue: routerSpy },
+        { provide: ActivatedRoute, useValue: activatedRouteStub }
+      ],
+      schemas: [NO_ERRORS_SCHEMA]
+    }).compileComponents();
+
+    postsServiceSpy.getPost.and.returnValue(of(mockPost));
+    fixture = TestBed.createComponent(EditPostComponent);
+    component = fixture.componentInstance;
+  });
+
+
+  it('should mark form as touched and not submit if form is invalid', () => {
+    component.postForm.controls['title'].setValue('');
+    component.postForm.controls['content'].setValue('');
+    component.editPost();
+    expect(component.postForm.touched).toBeTrue();
+    expect(postsServiceSpy.editPost).not.toHaveBeenCalled();
+  });
+
+  it('should reset editingPost on cancel', () => {
+    component.cancel();
+    expect(postsServiceSpy.editingPost.set).toHaveBeenCalledWith(0);
+  });
+
+  it('should validate title field correctly', () => {
+    const titleControl = component.postForm.controls['title'];
+    titleControl.setValue('');
+    expect(titleControl.hasError('required')).toBeTrue();
+    titleControl.setValue('a'.repeat(201));
+    expect(titleControl.hasError('maxlength')).toBeTrue();
+    titleControl.setValue('Valid Title');
+    expect(titleControl.valid).toBeTrue();
+  });
+
+  it('should validate content field correctly', () => {
+    const contentControl = component.postForm.controls['content'];
+    contentControl.setValue('');
+    expect(contentControl.hasError('required')).toBeTrue();
+    contentControl.setValue('a'.repeat(1001));
+    expect(contentControl.hasError('maxlength')).toBeTrue();
+    contentControl.setValue('Valid Content');
+    expect(contentControl.valid).toBeTrue();
+  });
+});
