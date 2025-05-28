@@ -35,12 +35,12 @@ describe('EditPostComponent', () => {
 
   beforeEach(async () => {
     const detailedPostSignal = signal<Post>(mockPost);
-spyOn(detailedPostSignal, 'set');
+    spyOn(detailedPostSignal, 'set');
 
-postsServiceSpy = jasmine.createSpyObj('PostsService', ['getPost', 'editPost'], {
-  editingPost: { set: jasmine.createSpy('set') },
-  detailedPost: detailedPostSignal
-});
+    postsServiceSpy = jasmine.createSpyObj('PostsService', ['getPost', 'editPost'], {
+      editingPost: { set: jasmine.createSpy('set') },
+      detailedPost: detailedPostSignal
+    });
 
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 

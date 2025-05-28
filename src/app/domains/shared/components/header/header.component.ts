@@ -17,6 +17,7 @@ export class HeaderComponent {
   logoutStatus = signal<'init' | 'loading' | 'success'>('init');
   error = signal<string | null>(null);
   success = signal<string | null>(null);
+  loggingOut = signal<boolean>(false);
 
   constructor() {
     this.authservice.checkInitialState();
@@ -69,6 +70,11 @@ export class HeaderComponent {
   toggleMenu(): void {
     this.isMenuOpen.update((value) => !value);
   }
+
+  toggleLogout(): void {
+    this.loggingOut.update((value) => !value);
+  }
+
   logout() {
     this.logoutStatus.set('loading');
     this.authservice.logout().subscribe({

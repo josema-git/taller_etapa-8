@@ -80,12 +80,21 @@ export class PostComponent {
       this.postsService.unlikePost(this.post().id).subscribe(
         () => {
           this.post().is_liked = false;
+          this.post().likes -= 1;
+          this.likesResponse().results = this.likesResponse().results.filter(like => like.post !== this.post().id);
         }
       );
     } else {
       this.postsService.likePost(this.post().id).subscribe(
         () => {
           this.post().is_liked = true;
+          this.post().likes += 1;
+          this.likesResponse().results.push({
+            id: 0,
+            author: 0,
+            post: this.post().id,
+            created_at: new Date().toISOString()
+          })
         }
       );
     }
